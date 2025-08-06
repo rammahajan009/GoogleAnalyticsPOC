@@ -1,222 +1,223 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# 📊 Google Analytics 4 Multi-Project Integration for React Native
 
-# Getting Started
+A complete React Native project demonstrating how to integrate Google Analytics 4 (GA4) with support for multiple analytics projects. This project provides a generic, reusable analytics service that can handle multiple GA4 properties simultaneously.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## 🚀 Features
 
-## Step 1: Start Metro
+- ✅ **Multi-Project Analytics**: Switch between different GA4 properties (India, US, UK, etc.)
+- ✅ **Generic Analytics Service**: Reusable service architecture for any project type
+- ✅ **SafeAreaView Integration**: Proper notch and status bar handling
+- ✅ **Persistent Client ID**: User tracking across app sessions
+- ✅ **TypeScript Support**: Full type safety and IntelliSense
+- ✅ **Real-time Testing**: Demo UI with live event logging
+- ✅ **Comprehensive Documentation**: Step-by-step setup guide
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## 📱 Demo Screenshots
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+The app includes a demo interface with:
+- Project selection buttons (🇮🇳 India, 🇺🇸 US, 🇬🇧 UK)
+- Event testing buttons for different analytics events
+- Real-time console logging
+- SafeAreaView for proper device compatibility
 
-```sh
-# Using npm
-npm start
+## 🛠️ Quick Start
 
-# OR using Yarn
-yarn start
+### Prerequisites
+- Node.js (v18 or higher)
+- Yarn package manager
+- React Native development environment
+- Android Studio (for Android) or Xcode (for iOS)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/rammahajan009/GoogleAnalyticsPOC.git
+   cd GoogleAnalyticsPOC
+   ```
+
+2. **Install dependencies**
+   ```bash
+   yarn install
+   ```
+
+3. **iOS Setup** (if developing for iOS)
+   ```bash
+   cd ios && pod install && cd ..
+   ```
+
+4. **Run the app**
+   ```bash
+   # For Android
+   yarn android
+   
+   # For iOS
+   yarn ios
+   ```
+
+## 📊 Configuration
+
+### Current Setup
+The project is pre-configured with:
+- **🇮🇳 India Project**: `G-ECMNWKHPGR` (working GA4 property)
+- **🇺🇸 US Project**: Placeholder (ready for your US GA4 property)
+- **🇬🇧 UK Project**: Placeholder (ready for your UK GA4 property)
+
+### Add Your GA4 Properties
+
+1. **Get your GA4 credentials**:
+   - Go to [analytics.google.com](https://analytics.google.com)
+   - Create GA4 properties for each country/project
+   - Get Measurement ID (format: G-XXXXXXXXXX)
+   - Get API Secret from Admin > Data Streams > Measurement Protocol API secrets
+
+2. **Update configuration** in `src/config/AnalyticsConfig.ts`:
+   ```typescript
+   export const ANALYTICS_PROJECTS = {
+     india: {
+       measurementId: 'G-ECMNWKHPGR', // Your India GA4 property
+       apiSecret: 'lEXviq-yRuCEWIAwErz6QA',
+       projectName: 'India Project',
+     },
+     us: {
+       measurementId: 'G-XXXXXXXXXX', // Replace with your US GA4 property
+       apiSecret: 'YOUR_US_API_SECRET', // Replace with your US API Secret
+       projectName: 'US Project',
+     },
+     // Add more projects...
+   };
+   ```
+
+## 🧪 Testing
+
+1. **Run the app**: `yarn android` or `yarn ios`
+2. **Switch projects**: Use the project selection buttons
+3. **Test events**: Press the demo buttons to log events
+4. **Check console**: View detailed logs in the terminal
+5. **Verify GA4**: Check Real-Time reports in each GA4 property
+
+## 📁 Project Structure
+
+```
+GoogleAnalyticsPOC/
+├── src/
+│   ├── services/AnalyticsService.ts          # Generic analytics service
+│   ├── hooks/useAnalytics.ts                 # React hook for easy integration
+│   ├── config/AnalyticsConfig.ts             # Project configurations
+│   └── utils/ClientIdManager.ts              # Client ID management
+├── App.tsx                                   # Main app component with demo UI
+├── package.json                              # Dependencies
+└── README.md                                # This file
 ```
 
-## Step 2: Build and run your app
+## 🔧 API Usage
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
-
-# Analytics Service
-
-A generic, flexible analytics service for React Native that supports multiple Google Analytics 4 (GA4) properties.
-
-## Features
-
-- ✅ **Multi-Project Support**: Track events to different GA4 properties
-- ✅ **Generic Interface**: Easy to use with any project structure
-- ✅ **React Hook**: Simple integration with React components
-- ✅ **TypeScript Support**: Fully typed interfaces
-- ✅ **Persistent Client IDs**: Each project maintains its own client ID
-- ✅ **No External Dependencies**: Uses built-in fetch API
-
-## Quick Start
-
-### 1. Configure Projects
-
-Edit `src/config/AnalyticsConfig.ts`:
-
-```typescript
-export const ANALYTICS_PROJECTS: Record<string, ProjectAnalyticsConfig> = {
-  main: {
-    measurementId: 'G-ECMNWKHPGR',
-    apiSecret: 'lEXviq-yRuCEWIAwErz6QA',
-    projectName: 'Main Project',
-  },
-  us: {
-    measurementId: 'G-XXXXXXXXXX',
-    apiSecret: 'YOUR_US_API_SECRET',
-    projectName: 'US Project',
-  },
-  // Add more projects...
-};
-```
-
-### 2. Use in React Components
-
+### Basic Event Logging
 ```typescript
 import { useAnalytics } from './src/hooks/useAnalytics';
 
 function MyComponent() {
   const { logEvent, setCurrentProject } = useAnalytics();
 
-  const handleButtonClick = async () => {
-    await logEvent('button_click', {
-      button_name: 'submit',
-      screen: 'login',
+  const handleButtonClick = () => {
+    logEvent({
+      name: 'button_click',
+      parameters: {
+        button_name: 'test_button',
+        screen: 'home'
+      }
     });
   };
 
-  return <Button title="Submit" onPress={handleButtonClick} />;
+  return <Button onPress={handleButtonClick} title="Test Event" />;
 }
 ```
 
-### 3. Switch Projects
-
+### Multi-Project Event Logging
 ```typescript
-// Switch to different project
+// Log to multiple projects simultaneously
+logEvent({
+  name: 'user_action',
+  parameters: { action: 'purchase' },
+  projectIds: ['india', 'us', 'uk'] // Send to multiple projects
+});
+```
+
+### Project Switching
+```typescript
+// Switch current project
 setCurrentProject('us');
 
-// Log event to specific project
-await logEvent('test_event', {}, 'uk');
-
-// Log to multiple projects
-await logEventToMultipleProjects('global_event', {}, ['main', 'us', 'uk']);
+// Log to specific project
+logEvent({
+  name: 'page_view',
+  projectId: 'india' // Override current project
+});
 ```
 
-## File Structure
+## 📦 Dependencies
 
-```
-src/
-├── services/
-│   └── AnalyticsService.ts          # Generic analytics service
-├── hooks/
-│   └── useAnalytics.ts              # React hook
-├── config/
-│   └── AnalyticsConfig.ts           # Project configurations
-└── utils/
-    └── ClientIdManager.ts           # Client ID management
-```
+Key dependencies used:
+- `react-native-safe-area-context`: For notch handling
+- `@react-native-async-storage/async-storage`: For client ID persistence
+- `fetch`: For GA4 Measurement Protocol API calls
 
-## API Reference
+## 🔍 Troubleshooting
 
-### AnalyticsService
+### Common Issues
 
-- `setCurrentProject(projectId)`: Set current project
-- `initializeProject(projectId, config)`: Initialize project
-- `logEvent(event)`: Log event to current project
-- `logEventToMultipleProjects(event, projectIds)`: Log to multiple projects
+1. **Metro bundler issues**:
+   ```bash
+   yarn start --reset-cache
+   ```
 
-### useAnalytics Hook
+2. **iOS build issues**:
+   - Clean build folder in Xcode
+   - Run `cd ios && pod install`
 
-- `currentProject`: Current project ID
-- `setCurrentProject(projectId)`: Switch project
-- `logEvent(eventName, parameters, projectId?)`: Log custom event
-- `logPageView(title, location, projectId?)`: Log page view
-- `logButtonClick(buttonName, params, projectId?)`: Log button click
-- `logUserAction(action, category, label?, value?, projectId?)`: Log user action
-- `logError(message, code?, params?, projectId?)`: Log error
-- `logPurchase(transactionId, value, currency?, items?, projectId?)`: Log purchase
+3. **Android build issues**:
+   ```bash
+   cd android && ./gradlew clean
+   ```
 
-## Testing
+4. **Analytics not working**:
+   - Check GA4 credentials in `src/config/AnalyticsConfig.ts`
+   - Verify network connectivity
+   - Check console for error messages
 
-1. **Run the app**: `npm run android` or `npm run ios`
-2. **Switch projects**: Use the project selection buttons
-3. **Test events**: Press the demo buttons
-4. **Check console**: View detailed logs
-5. **Verify GA4**: Check Real-Time reports in each GA4 property
+## 🎯 Use Cases
 
-## Configuration
+This project is perfect for:
+- **Multi-country apps** with different analytics requirements
+- **A/B testing** with separate GA4 properties
+- **Client projects** requiring isolated analytics
+- **Learning GA4** Measurement Protocol integration
+- **Template projects** for React Native analytics
 
-Add your GA4 properties to `src/config/AnalyticsConfig.ts`:
+## 📄 License
 
-1. **Get Measurement ID**: From GA4 Admin > Data Streams
-2. **Get API Secret**: From GA4 Admin > Data Streams > Measurement Protocol API secrets
-3. **Add to config**: Update `ANALYTICS_PROJECTS` object
+This project is open source and available under the [MIT License](LICENSE).
 
-## Support
+## 🤝 Contributing
 
-- **Console Logs**: Check for detailed event logging
-- **GA4 Real-Time**: Verify events appear in Real-Time reports
-- **Network Tab**: Monitor requests to google-analytics.com
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-Your analytics system is now generic, flexible, and ready for any multi-project setup! 🚀
+## 📞 Support
+
+If you encounter issues:
+1. Check the console logs for error messages
+2. Verify your GA4 credentials are correct
+3. Ensure your React Native development environment is properly set up
+4. Open an issue on GitHub for bugs or feature requests
+
+## 🔗 Links
+
+- **GitHub Repository**: https://github.com/rammahajan009/GoogleAnalyticsPOC
+- **Google Analytics 4**: https://analytics.google.com
+- **React Native**: https://reactnative.dev
+
+---
+
+**Made with ❤️ for the React Native community**
+
+⭐ **Star this repository if you find it helpful!**
