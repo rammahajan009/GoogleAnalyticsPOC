@@ -1,0 +1,79 @@
+name: Build and Release APK (Simple)
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'yarn'
+        
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+      
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        sdk-platform: '34'
+        sdk-build-tools: '34.0.0'
+        ndk-version: '25.1.8937393'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Make Gradlew executable
+      run: chmod +x android/gradlew
+      
+    - name: Build debug APK
+      run: |
+        cd android
+        ./gradlew assembleDebug
+      env:
+        ANDROID_HOME: ${{ env.ANDROID_HOME }}
+        
+    - name: Create Release with GitHub CLI
+      run: |
+        gh release create ${{ github.ref_name }} \
+          --title "Release ${{ github.ref_name }}" \
+          --notes "## 🚀 Multi-Project Google Analytics 4 Demo
+        
+        ### Features:
+        - ✅ Multi-project analytics (India, US, UK)
+        - ✅ Generic analytics service
+        - ✅ SafeAreaView implementation
+        - ✅ TypeScript support
+        - ✅ Demo UI with event testing
+        
+        ### Installation:
+        1. Download the APK
+        2. Enable "Install from unknown sources"
+        3. Install and test the analytics features
+        
+        ### Build Info:
+        - **Version**: ${{ github.ref_name }}
+        - **Build Date**: $(date)
+        - **Commit**: ${{ github.sha }}" \
+          android/app/build/outputs/apk/debug/app-debug.apk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
