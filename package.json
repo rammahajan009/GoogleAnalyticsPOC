@@ -7,7 +7,9 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "release": "./scripts/release.sh",
+    "release:version": "./scripts/release.sh"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
