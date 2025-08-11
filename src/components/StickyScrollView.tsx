@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, ForwardedRef } from 'react';
 import {
   View,
   ScrollView,
@@ -13,11 +13,11 @@ interface StickyScrollViewProps {
   bottomContent: React.ReactNode;
 }
 
-const StickyScrollView: React.FC<StickyScrollViewProps> = ({
+const StickyScrollView = forwardRef<ScrollView, StickyScrollViewProps>(({
   topContent,
   buttonContent,
   bottomContent,
-}) => {
+}, ref) => {
   const [isButtonStuck, setIsButtonStuck] = useState(false);
   const [buttonLayout, setButtonLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const [cachedButtonHeight, setCachedButtonHeight] = useState(0);
@@ -107,6 +107,7 @@ const StickyScrollView: React.FC<StickyScrollViewProps> = ({
   return (
     <View style={styles.container}>
       <ScrollView
+        ref={ref}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         onScroll={handleScroll}
@@ -154,14 +155,14 @@ const StickyScrollView: React.FC<StickyScrollViewProps> = ({
             },
           ]}
         >
-                      <View
-              onLayout={(event) => {
-                const { height } = event.nativeEvent.layout;
-                if (height > 0 && cachedButtonHeight === 0) {
-                  setCachedButtonHeight(height);
-                }
-              }}
-            >
+          <View
+            onLayout={(event) => {
+              const { height } = event.nativeEvent.layout;
+              if (height > 0 && cachedButtonHeight === 0) {
+                setCachedButtonHeight(height);
+              }
+            }}
+          >
             {buttonContent}
           </View>
         </Animated.View>
@@ -211,7 +212,7 @@ const StickyScrollView: React.FC<StickyScrollViewProps> = ({
       </Animated.View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

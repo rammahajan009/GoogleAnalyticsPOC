@@ -133,6 +133,41 @@ const ProductScreen = () => {
 | `buttonContent` | `React.ReactNode` | ✅ | The button that will become sticky |
 | `bottomContent` | `React.ReactNode` | ✅ | Content to display below the button |
 
+## 🔗 Ref Access
+
+The component forwards a ref to the underlying ScrollView, allowing parent components to access ScrollView methods:
+
+```tsx
+const scrollViewRef = useRef<ScrollView>(null);
+
+const scrollToTop = () => {
+  scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+};
+
+const scrollToBottom = () => {
+  scrollViewRef.current?.scrollToEnd({ animated: true });
+};
+
+return (
+  <StickyScrollView
+    ref={scrollViewRef}
+    topContent={topContent}
+    buttonContent={buttonContent}
+    bottomContent={bottomContent}
+  />
+);
+```
+
+### Available ScrollView Methods
+
+With the ref, you can access all standard ScrollView methods:
+
+- **`scrollTo({ x, y, animated })`** - Scroll to specific coordinates
+- **`scrollToEnd({ animated })`** - Scroll to the bottom
+- **`flashScrollIndicators()`** - Flash scroll indicators
+- **`getScrollResponder()`** - Get scroll responder
+- **`scrollResponderScrollTo({ x, y, animated })`** - Alternative scroll method
+
 
 ## 🎯 How It Works
 
