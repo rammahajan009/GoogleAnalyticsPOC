@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, forwardRef, ForwardedRef } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, ForwardedRef, useImperativeHandle } from 'react';
 import {
   View,
   ScrollView,
@@ -7,6 +7,13 @@ import {
   StyleSheet,
 } from 'react-native';
 
+interface StickyScrollViewRef {
+  scrollTo: (y: number, animated?: boolean) => void;
+  scrollToComponent: (componentRef: React.RefObject<View>, animated?: boolean, offset?: number) => void;
+  scrollToTop: (animated?: boolean) => void;
+  scrollToBottom: (animated?: boolean) => void;
+}
+
 interface StickyScrollViewProps {
   topContent: React.ReactNode;
   buttonContent: React.ReactNode;
@@ -14,7 +21,7 @@ interface StickyScrollViewProps {
   stickyHeaderIndices?: number[];
 }
 
-const StickyScrollView = forwardRef<ScrollView, StickyScrollViewProps>(({
+const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(({
   topContent,
   buttonContent,
   bottomContent,
@@ -26,11 +33,33 @@ const StickyScrollView = forwardRef<ScrollView, StickyScrollViewProps>(({
   const [topContentHeight, setTopContentHeight] = useState(0);
   const buttonRef = useRef<View>(null);
   const topContentRef = useRef<View>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
   const buttonAnimation = useRef(new Animated.Value(0)).current;
   const lastScrollDirection = useRef<'up' | 'down' | null>(null);
   const lastScrollY = useRef(0);
 
   const screenHeight = Dimensions.get('window').height;
+
+  // Expose scrollTo methods to parent
+  useImperativeHandle(ref, () => ({
+    scrollTo: (y: number, animated: boolean = true) => {
+      scrollViewRef.current?.scrollTo({ y, animated });
+    },
+    scrollToComponent: (componentRef: React.RefObject<View>, animated: boolean = true, offset: number = 0) => {
+      if (componentRef.current) {
+        componentRef.current.measure((x, y, width, height, pageX, pageY) => {
+          const scrollY = pageY + offset;
+          scrollViewRef.current?.scrollTo({ y: scrollY, animated });
+        });
+      }
+    },
+    scrollToTop: (animated: boolean = true) => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated });
+    },
+    scrollToBottom: (animated: boolean = true) => {
+      scrollViewRef.current?.scrollToEnd({ animated });
+    },
+  }));
 
   // Initialize button state based on position
   useEffect(() => {
@@ -109,7 +138,7 @@ const StickyScrollView = forwardRef<ScrollView, StickyScrollViewProps>(({
   return (
     <View style={styles.container}>
       <ScrollView
-        ref={ref}
+        ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         onScroll={handleScroll}

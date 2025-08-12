@@ -10,6 +10,8 @@ A React Native component that provides a smooth, native-like sticky button exper
 - **No Flickering**: Anti-flicker logic prevents bouncing and visual glitches
 - **Flexible Content**: Accepts any React components as top, button, and bottom content
 - **Pure Component**: Handles all sticky logic internally, parent only provides content
+- **Advanced Scrolling**: Built-in scrollTo methods for programmatic scrolling control
+- **Sticky Headers**: Support for sticky header indices via `stickyHeaderIndices` prop
 
 ## 🚀 Installation
 
@@ -80,46 +82,116 @@ const styles = StyleSheet.create({
 });
 ```
 
-### Advanced Example with Custom Styling
+### Advanced Example with ScrollTo Functionality
 
 ```tsx
-const ProductScreen = () => {
-  const handleAddToCart = () => {
-    // Handle add to cart
+import React, { useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import StickyScrollView, { StickyScrollViewRef } from './components/StickyScrollView';
+
+const AdvancedScreen = () => {
+  const stickyScrollViewRef = useRef<StickyScrollViewRef>(null);
+  const targetSectionRef = useRef<View>(null);
+
+  const handleScrollToSection = () => {
+    // Scroll to specific section with 20px offset
+    stickyScrollViewRef.current?.scrollToComponent(targetSectionRef, true, 20);
+  };
+
+  const handleScrollToTop = () => {
+    stickyScrollViewRef.current?.scrollToTop(true);
+  };
+
+  const handleScrollToPosition = () => {
+    // Scroll to specific Y position
+    stickyScrollViewRef.current?.scrollTo(500, true);
   };
 
   const topContent = (
     <View>
-      <Text style={styles.productTitle}>Product Name</Text>
-      <Text style={styles.productDescription}>Product description...</Text>
-      {/* More product details */}
+      <Text style={styles.title}>Product Details</Text>
+      <TouchableOpacity style={styles.scrollButton} onPress={handleScrollToSection}>
+        <Text>Jump to Reviews</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.scrollButton} onPress={handleScrollToTop}>
+        <Text>Back to Top</Text>
+      </TouchableOpacity>
     </View>
   );
 
   const buttonContent = (
-    <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
-      <View style={styles.buttonContent}>
-        <Text style={styles.buttonIcon}>🛒</Text>
-        <Text style={styles.buttonText}>Add to Cart</Text>
-        <Text style={styles.buttonPrice}>$99.99</Text>
-      </View>
+    <TouchableOpacity style={styles.addToCartButton}>
+      <Text style={styles.buttonText}>Add to Cart - $99.99</Text>
     </TouchableOpacity>
   );
 
   const bottomContent = (
     <View>
-      <Text style={styles.sectionTitle}>Reviews</Text>
-      {/* Review content */}
+      <View ref={targetSectionRef}>
+        <Text style={styles.sectionTitle}>Customer Reviews</Text>
+        <Text>This is the reviews section...</Text>
+      </View>
       <Text style={styles.sectionTitle}>Specifications</Text>
-      {/* Spec content */}
+      <Text>Product specifications...</Text>
     </View>
   );
 
   return (
     <StickyScrollView
+      ref={stickyScrollViewRef}
       topContent={topContent}
       buttonContent={buttonContent}
       bottomContent={bottomContent}
+      stickyHeaderIndices={[0]} // Make the first item in bottomContent sticky
+    />
+  );
+};
+```
+
+### Example with Sticky Headers
+
+```tsx
+const StickyHeaderExample = () => {
+  const stickyScrollViewRef = useRef<StickyScrollViewRef>(null);
+
+  const topContent = (
+    <View>
+      <Text style={styles.header}>Product Catalog</Text>
+    </View>
+  );
+
+  const buttonContent = (
+    <TouchableOpacity style={styles.filterButton}>
+      <Text>Apply Filters</Text>
+    </TouchableOpacity>
+  );
+
+  const bottomContent = (
+    <View>
+      <View style={styles.categoryHeader}>
+        <Text style={styles.categoryTitle}>Electronics</Text>
+      </View>
+      <Text>Phone, Laptop, Tablet...</Text>
+      
+      <View style={styles.categoryHeader}>
+        <Text style={styles.categoryTitle}>Clothing</Text>
+      </View>
+      <Text>Shirts, Pants, Shoes...</Text>
+      
+      <View style={styles.categoryHeader}>
+        <Text style={styles.categoryTitle}>Home & Garden</Text>
+      </View>
+      <Text>Furniture, Decor, Tools...</Text>
+    </View>
+  );
+
+  return (
+    <StickyScrollView
+      ref={stickyScrollViewRef}
+      topContent={topContent}
+      buttonContent={buttonContent}
+      bottomContent={bottomContent}
+      stickyHeaderIndices={[0, 2, 4]} // Make category headers sticky
     />
   );
 };
@@ -132,42 +204,97 @@ const ProductScreen = () => {
 | `topContent` | `React.ReactNode` | ✅ | Content to display above the button |
 | `buttonContent` | `React.ReactNode` | ✅ | The button that will become sticky |
 | `bottomContent` | `React.ReactNode` | ✅ | Content to display below the button |
+| `stickyHeaderIndices` | `number[]` | ❌ | Array of indices for sticky headers in bottomContent |
 
-## 🔗 Ref Access
+## 🔗 Ref Access & ScrollTo Methods
 
-The component forwards a ref to the underlying ScrollView, allowing parent components to access ScrollView methods:
+The component provides a custom ref interface with powerful scrollTo methods for programmatic scrolling control:
 
 ```tsx
-const scrollViewRef = useRef<ScrollView>(null);
+import { StickyScrollViewRef } from './components/StickyScrollView';
 
-const scrollToTop = () => {
-  scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-};
-
-const scrollToBottom = () => {
-  scrollViewRef.current?.scrollToEnd({ animated: true });
-};
-
-return (
-  <StickyScrollView
-    ref={scrollViewRef}
-    topContent={topContent}
-    buttonContent={buttonContent}
-    bottomContent={bottomContent}
-  />
-);
+const scrollViewRef = useRef<StickyScrollViewRef>(null);
 ```
 
-### Available ScrollView Methods
+### Available ScrollTo Methods
 
-With the ref, you can access all standard ScrollView methods:
+| Method | Parameters | Description |
+|--------|------------|-------------|
+| `scrollTo(y, animated?)` | `y: number, animated?: boolean` | Scroll to specific Y position |
+| `scrollToComponent(ref, animated?, offset?)` | `ref: React.RefObject<View>, animated?: boolean, offset?: number` | Scroll to specific component reference with optional offset |
+| `scrollToTop(animated?)` | `animated?: boolean` | Scroll to the top of the content |
+| `scrollToBottom(animated?)` | `animated?: boolean` | Scroll to the bottom of the content |
 
-- **`scrollTo({ x, y, animated })`** - Scroll to specific coordinates
-- **`scrollToEnd({ animated })`** - Scroll to the bottom
-- **`flashScrollIndicators()`** - Flash scroll indicators
-- **`getScrollResponder()`** - Get scroll responder
-- **`scrollResponderScrollTo({ x, y, animated })`** - Alternative scroll method
+### ScrollTo Examples
 
+```tsx
+// Scroll to specific position
+stickyScrollViewRef.current?.scrollTo(300, true);
+
+// Scroll to component with offset
+stickyScrollViewRef.current?.scrollToComponent(sectionRef, true, 50);
+
+// Scroll to top
+stickyScrollViewRef.current?.scrollToTop(true);
+
+// Scroll to bottom
+stickyScrollViewRef.current?.scrollToBottom(true);
+```
+
+### Complete ScrollTo Implementation Example
+
+```tsx
+const ScrollableProductScreen = () => {
+  const stickyScrollViewRef = useRef<StickyScrollViewRef>(null);
+  const descriptionRef = useRef<View>(null);
+  const reviewsRef = useRef<View>(null);
+  const specsRef = useRef<View>(null);
+
+  const scrollToSection = (sectionRef: React.RefObject<View>, offset: number = 0) => {
+    stickyScrollViewRef.current?.scrollToComponent(sectionRef, true, offset);
+  };
+
+  return (
+    <View style={styles.container}>
+      {/* Navigation buttons */}
+      <View style={styles.navigation}>
+        <TouchableOpacity onPress={() => scrollToSection(descriptionRef)}>
+          <Text>Description</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => scrollToSection(reviewsRef)}>
+          <Text>Reviews</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => scrollToSection(specsRef)}>
+          <Text>Specs</Text>
+        </TouchableOpacity>
+      </View>
+
+      <StickyScrollView
+        ref={stickyScrollViewRef}
+        topContent={<ProductHeader />}
+        buttonContent={<AddToCartButton />}
+        bottomContent={
+          <View>
+            <View ref={descriptionRef}>
+              <Text style={styles.sectionTitle}>Description</Text>
+              <Text>Product description...</Text>
+            </View>
+            <View ref={reviewsRef}>
+              <Text style={styles.sectionTitle}>Reviews</Text>
+              <Text>Customer reviews...</Text>
+            </View>
+            <View ref={specsRef}>
+              <Text style={styles.sectionTitle}>Specifications</Text>
+              <Text>Product specs...</Text>
+            </View>
+          </View>
+        }
+        stickyHeaderIndices={[0, 2, 4]} // Make section titles sticky
+      />
+    </View>
+  );
+};
+```
 
 ## 🎯 How It Works
 
@@ -179,6 +306,7 @@ With the ref, you can access all standard ScrollView methods:
 │  buttonContent  │ ← Button that becomes sticky
 ├─────────────────┤
 │  bottomContent  │ ← Scrollable content below button
+│   [Sticky]      │ ← Sticky headers (if stickyHeaderIndices provided)
 └─────────────────┘
 ```
 
@@ -192,6 +320,12 @@ With the ref, you can access all standard ScrollView methods:
 - **Appear Threshold**: When button goes out of view from bottom
 - **Disappear Threshold**: When button comes back into view from bottom
 - **Dynamic Calculation**: Based on actual content layout and button dimensions
+
+### 4. **ScrollTo Functionality**
+- **Component Reference**: Uses React refs to measure component positions
+- **Offset Support**: Allows fine-tuning of scroll position
+- **Smooth Animations**: Built-in animation support for better UX
+- **Type Safety**: Full TypeScript support with proper interfaces
 
 ## 🎨 Styling Guidelines
 
@@ -222,6 +356,25 @@ const buttonStyles = StyleSheet.create({
 });
 ```
 
+### Sticky Header Styling
+
+```tsx
+const stickyHeaderStyles = StyleSheet.create({
+  categoryHeader: {
+    backgroundColor: '#f8f9fa',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+  },
+  categoryTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#495057',
+  },
+});
+```
+
 ## 🔍 Technical Details
 
 ### Internal State Management
@@ -244,6 +397,7 @@ const buttonStyles = StyleSheet.create({
 - **Scroll Throttling**: 16ms throttle for smooth scrolling
 - **Layout Caching**: Stores measured dimensions to avoid recalculation
 - **Efficient Animations**: Uses native driver where possible
+- **Ref-based Scrolling**: Efficient component-to-component navigation
 
 ## 🐛 Troubleshooting
 
@@ -261,12 +415,18 @@ const buttonStyles = StyleSheet.create({
    - Ensure consistent button dimensions
    - Check for conflicting style properties
 
+4. **ScrollTo Not Working**
+   - Verify component refs are properly set
+   - Check that target components are mounted
+   - Ensure refs are passed to the correct components
+
 ### Debug Mode
 
 The component includes internal logging for development. Check console for:
 - Button height measurements
 - Threshold calculations
 - State changes
+- ScrollTo method calls
 
 ## 📱 Platform Support
 
