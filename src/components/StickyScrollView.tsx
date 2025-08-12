@@ -166,6 +166,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
           ]}
         >
           <View
+            style={styles.buttonContentWrapper}
             onLayout={(event) => {
               const { height } = event.nativeEvent.layout;
               if (height > 0 && cachedButtonHeight === 0) {
@@ -174,8 +175,8 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
             }}
           >
             {buttonContent}
-                  </View>
-      </View>
+          </View>
+        </View>
 
         {/* Bottom Content */}
         <View>
@@ -187,6 +188,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
       {isButtonStuck && (
         <View style={styles.stickyButtonContainer}>
           <View
+            style={styles.buttonContentWrapper}
             onLayout={(event) => {
               const { height } = event.nativeEvent.layout;
               if (height > 0 && cachedButtonHeight === 0) {
@@ -215,6 +217,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
+    alignSelf: 'stretch',
   },
   stickyButtonContainer: {
     position: 'absolute',
@@ -224,6 +228,12 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
+    alignSelf: 'stretch',
+  },
+  buttonContentWrapper: {
+    width: '100%',
+    alignSelf: 'stretch',
   },
 });
 
