@@ -11,12 +11,14 @@ interface StickyScrollViewProps {
   topContent: React.ReactNode;
   buttonContent: React.ReactNode;
   bottomContent: React.ReactNode;
+  stickyHeaderIndices?: number[];
 }
 
 const StickyScrollView = forwardRef<ScrollView, StickyScrollViewProps>(({
   topContent,
   buttonContent,
   bottomContent,
+  stickyHeaderIndices,
 }, ref) => {
   const [isButtonStuck, setIsButtonStuck] = useState(false);
   const [buttonLayout, setButtonLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
@@ -113,6 +115,7 @@ const StickyScrollView = forwardRef<ScrollView, StickyScrollViewProps>(({
         onScroll={handleScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={true}
+        stickyHeaderIndices={stickyHeaderIndices}
       >
         {/* Top Content */}
         <View 
