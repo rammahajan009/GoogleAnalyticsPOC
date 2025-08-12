@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect, forwardRef, ForwardedRef, useImperativeHandle } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {
   View,
   ScrollView,
-  Animated,
   Dimensions,
   StyleSheet,
 } from 'react-native';
@@ -34,7 +33,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
   const buttonRef = useRef<View>(null);
   const topContentRef = useRef<View>(null);
   const scrollViewRef = useRef<ScrollView>(null);
-  const buttonAnimation = useRef(new Animated.Value(0)).current;
+
   const lastScrollDirection = useRef<'up' | 'down' | null>(null);
   const lastScrollY = useRef(0);
 
@@ -71,10 +70,8 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
           
           if (pageY > stickyAppearThreshold) {
             setIsButtonStuck(true);
-            buttonAnimation.setValue(1);
           } else {
             setIsButtonStuck(false);
-            buttonAnimation.setValue(0);
           }
         });
       }
@@ -124,12 +121,10 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
     
     if (scrollY > stickyDisappearThreshold && currentScrollDirection === 'down' && isButtonStuck) {
       setIsButtonStuck(false);
-      buttonAnimation.setValue(0);
       lastScrollDirection.current = 'down';
     } else if (scrollY < stickyAppearThreshold && currentScrollDirection === 'up' && !isButtonStuck) {
       lastScrollDirection.current = 'up';
       setIsButtonStuck(true);
-      buttonAnimation.setValue(1);
     }
     
     lastScrollY.current = scrollY;
@@ -158,32 +153,15 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
         </View>
 
         {/* Button positioned in content */}
-        <Animated.View
+        <View
           ref={buttonRef}
           onLayout={measureButtonPosition}
           style={[
             styles.buttonContainer,
             {
-              opacity: buttonAnimation.interpolate({
-                inputRange: [0, 1],
-                outputRange: [1, 0],
-              }),
-              height: buttonAnimation.interpolate({
-                inputRange: [0, 1],
-                outputRange: [cachedButtonHeight || buttonLayout.height || 80, 0],
-              }),
-              marginVertical: buttonAnimation.interpolate({
-                inputRange: [0, 1],
-                outputRange: [30, 0],
-              }),
-              transform: [
-                {
-                  scale: buttonAnimation.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [1, 0.8],
-                  }),
-                },
-              ],
+              opacity: isButtonStuck ? 0 : 1,
+              display: isButtonStuck ? 'none' : 'flex',
+              marginVertical: isButtonStuck ? 0 : 30,
             },
           ]}
         >
@@ -196,8 +174,8 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
             }}
           >
             {buttonContent}
-          </View>
-        </Animated.View>
+                  </View>
+      </View>
 
         {/* Bottom Content */}
         <View>
@@ -206,42 +184,20 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
       </ScrollView>
 
       {/* Sticky Button */}
-      <Animated.View
-        style={[
-          styles.stickyButtonContainer,
-          {
-            transform: [
-              {
-                translateY: buttonAnimation.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [100, 0],
-                }),
-              },
-              {
-                scale: buttonAnimation.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.8, 1],
-                }),
-              },
-            ],
-            opacity: buttonAnimation.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0, 1],
-            }),
-          },
-        ]}
-      >
-        <View
-          onLayout={(event) => {
-            const { height } = event.nativeEvent.layout;
-            if (height > 0 && cachedButtonHeight === 0) {
-              setCachedButtonHeight(height);
-            }
-          }}
-        >
-          {buttonContent}
+      {isButtonStuck && (
+        <View style={styles.stickyButtonContainer}>
+          <View
+            onLayout={(event) => {
+              const { height } = event.nativeEvent.layout;
+              if (height > 0 && cachedButtonHeight === 0) {
+                setCachedButtonHeight(height);
+              }
+            }}
+          >
+            {buttonContent}
+          </View>
         </View>
-      </Animated.View>
+      )}
     </View>
   );
 });
