@@ -1,14 +1,16 @@
 # StickyScrollView Component
 
-A React Native component that provides a smooth, native-like sticky button experience at the bottom of the screen. When a button scrolls out of view from the bottom, it smoothly sticks to the screen bottom, and when scrolling back up, it seamlessly rejoins the content.
+A React Native component that provides a smooth, native-like sticky button experience with sticky tabs navigation. The component features a header, sticky tabs, content sections, and a button that becomes sticky when scrolling out of view.
 
 ## ✨ Features
 
-- **Smooth Transitions**: Native-like animations using React Native's Animated API
-- **Dynamic Height Detection**: Automatically measures and caches button dimensions
-- **Smart Positioning**: Calculates thresholds based on actual content layout
+- **Sticky Tabs Navigation**: Horizontal tabs that stick to the top while scrolling
+- **Smooth Button Transitions**: Button smoothly becomes sticky when scrolling out of view
+- **Section Navigation**: Built-in scroll-to-section functionality with tab synchronization
+- **Dynamic Height Detection**: Automatically measures and caches button and tabs dimensions
+- **Smart Positioning**: Calculates thresholds based on actual content layout and sticky tabs
 - **No Flickering**: Anti-flicker logic prevents bouncing and visual glitches
-- **Flexible Content**: Accepts any React components as top, button, and bottom content
+- **Flexible Content**: Accepts header, tabs, top content, button, and footer as separate props
 - **Pure Component**: Handles all sticky logic internally, parent only provides content
 - **Advanced Scrolling**: Built-in scrollTo methods for programmatic scrolling control
 - **Sticky Headers**: Support for sticky header indices via `stickyHeaderIndices` prop
@@ -24,174 +26,410 @@ A React Native component that provides a smooth, native-like sticky button exper
 ### Basic Implementation
 
 ```tsx
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import StickyScrollView from './components/StickyScrollView';
 
 const MyScreen = () => {
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'features' | 'details'>('overview');
+  const stickyScrollViewRef = useRef(null);
+
   const handleButtonPress = () => {
     console.log('Button pressed!');
   };
 
-  // Top content (above the button)
-  const topContent = (
-    <View>
-      <Text>Header content</Text>
-      <Text>More content...</Text>
+  // Header content
+  const header = (
+    <View style={styles.header}>
+      <Text style={styles.headerTitle}>📚 Content Sections</Text>
+      <Text style={styles.headerSubtitle}>
+        Navigate through different sections using the tabs below.
+      </Text>
     </View>
+  );
+
+  // Tabs navigation
+  const tabs = (
+    <View style={styles.tabContainer}>
+      <TouchableOpacity 
+        style={[styles.tab, selectedTab === 'overview' && styles.activeTab]}
+        onPress={() => {
+          setSelectedTab('overview');
+          stickyScrollViewRef.current?.scrollToSection('overview', true);
+        }}
+      >
+        <Text style={styles.tabText}>Overview</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity 
+        style={[styles.tab, selectedTab === 'features' && styles.activeTab]}
+        onPress={() => {
+          setSelectedTab('features');
+          stickyScrollViewRef.current?.scrollToSection('features', true);
+        }}
+      >
+        <Text style={styles.tabText}>Features</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity 
+        style={[styles.tab, selectedTab === 'details' && styles.activeTab]}
+        onPress={() => {
+          setSelectedTab('details');
+          stickyScrollViewRef.current?.scrollToSection('details', true);
+        }}
+      >
+        <Text style={styles.tabText}>Details</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  // Top content (main sections)
+  const top = (
+    <>
+      <View 
+        ref={overviewRef}
+        style={styles.contentSection}
+        onLayout={(event) => {
+          const { y } = event.nativeEvent.layout;
+          stickyScrollViewRef.current?.registerSection('overview', y);
+        }}
+      >
+        <Text style={styles.sectionTitle}>Overview</Text>
+        <Text style={styles.contentText}>Overview content...</Text>
+      </View>
+      
+      <View 
+        ref={featuresRef}
+        style={styles.contentSection}
+        onLayout={(event) => {
+          const { y } = event.nativeEvent.layout;
+          stickyScrollViewRef.current?.registerSection('features', y);
+        }}
+      >
+        <Text style={styles.sectionTitle}>Features</Text>
+        <Text style={styles.contentText}>Features content...</Text>
+      </View>
+      
+      <View 
+        ref={detailsRef}
+        style={styles.contentSection}
+        onLayout={(event) => {
+          const { y } = event.nativeEvent.layout;
+          stickyScrollViewRef.current?.registerSection('details', y);
+        }}
+      >
+        <Text style={styles.sectionTitle}>Details</Text>
+        <Text style={styles.contentText}>Details content...</Text>
+      </View>
+    </>
   );
 
   // Button content (will become sticky)
   const buttonContent = (
     <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
-      <Text style={styles.buttonText}>Action Button</Text>
+      <Text style={styles.buttonText}>🎯 Sticky Button</Text>
+      <Text style={styles.buttonSubtext}>Tap me!</Text>
     </TouchableOpacity>
   );
 
-  // Bottom content (below the button)
-  const bottomContent = (
-    <View>
-      <Text>Footer content</Text>
-      <Text>More content...</Text>
+  // Footer content
+  const footer = (
+    <View style={styles.footer}>
+      <Text style={styles.footerText}>Additional content...</Text>
     </View>
   );
 
   return (
     <StickyScrollView
-      topContent={topContent}
+      ref={stickyScrollViewRef}
+      header={header}
+      tabs={tabs}
+      top={top}
       buttonContent={buttonContent}
-      bottomContent={bottomContent}
+      footer={footer}
+      stickyHeaderIndices={[1]} // Make tabs sticky (index 1)
+      onSectionChange={(sectionName) => {
+        if (sectionName === 'overview' || sectionName === 'features' || sectionName === 'details') {
+          setSelectedTab(sectionName);
+        }
+      }}
     />
   );
 };
 
 const styles = StyleSheet.create({
+  header: {
+    padding: 20,
+    backgroundColor: '#f8f9fa',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: '#666',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    width: '100%',
+    alignSelf: 'stretch',
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+  },
+  tab: {
+    flex: 1,
+    minWidth: 80,
+    marginHorizontal: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+  },
+  activeTab: {
+    backgroundColor: '#007bff',
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#495057',
+  },
+  contentSection: {
+    padding: 20,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  contentText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#333',
+  },
   button: {
-    width: 280,
+    width: '100%',
     height: 80,
     backgroundColor: '#007bff',
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
   },
   buttonText: {
     color: '#ffffff',
     fontSize: 18,
     fontWeight: 'bold',
   },
+  buttonSubtext: {
+    color: '#ffffff',
+    fontSize: 14,
+    opacity: 0.8,
+  },
+  footer: {
+    padding: 20,
+    backgroundColor: '#f8f9fa',
+  },
+  footerText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
 });
 ```
 
-### Advanced Example with ScrollTo Functionality
+### Advanced Example with Section Navigation
 
 ```tsx
-import React, { useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import StickyScrollView, { StickyScrollViewRef } from './components/StickyScrollView';
+import StickyScrollView from './components/StickyScrollView';
 
 const AdvancedScreen = () => {
-  const stickyScrollViewRef = useRef<StickyScrollViewRef>(null);
-  const targetSectionRef = useRef<View>(null);
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'features' | 'details'>('overview');
+  const stickyScrollViewRef = useRef(null);
+  
+  // Refs for content sections
+  const overviewRef = useRef<View>(null);
+  const featuresRef = useRef<View>(null);
+  const detailsRef = useRef<View>(null);
 
-  const handleScrollToSection = () => {
-    // Scroll to specific section with 20px offset
-    stickyScrollViewRef.current?.scrollToComponent(targetSectionRef, true, 20);
-  };
+  const header = (
+    <View style={styles.contentHeader}>
+      <Text style={styles.contentHeaderTitle}>📚 Content Sections</Text>
+      <Text style={styles.contentHeaderSubtitle}>
+        Navigate through different sections using the tabs below. Each section contains detailed information about the StickyScrollView component.
+      </Text>
+    </View>
+  );
 
-  const handleScrollToTop = () => {
-    stickyScrollViewRef.current?.scrollToTop(true);
-  };
-
-  const handleScrollToPosition = () => {
-    // Scroll to specific Y position
-    stickyScrollViewRef.current?.scrollTo(500, true);
-  };
-
-  const topContent = (
-    <View>
-      <Text style={styles.title}>Product Details</Text>
-      <TouchableOpacity style={styles.scrollButton} onPress={handleScrollToSection}>
-        <Text>Jump to Reviews</Text>
+  const tabs = (
+    <View style={styles.tabContainer}>
+      <TouchableOpacity 
+        style={[styles.tab, selectedTab === 'overview' && styles.activeTab]}
+        onPress={() => {
+          setSelectedTab('overview');
+          stickyScrollViewRef.current?.scrollToSection('overview', true);
+        }}
+      >
+        <Text style={[styles.tabText, selectedTab === 'overview' && styles.activeTabText]}>
+          Overview
+        </Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.scrollButton} onPress={handleScrollToTop}>
-        <Text>Back to Top</Text>
+      
+      <TouchableOpacity 
+        style={[styles.tab, selectedTab === 'features' && styles.activeTab]}
+        onPress={() => {
+          setSelectedTab('features');
+          stickyScrollViewRef.current?.scrollToSection('features', true);
+        }}
+      >
+        <Text style={[styles.tabText, selectedTab === 'features' && styles.activeTabText]}>
+          Features
+        </Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity 
+        style={[styles.tab, selectedTab === 'details' && styles.activeTab]}
+        onPress={() => {
+          setSelectedTab('details');
+          stickyScrollViewRef.current?.scrollToSection('details', true);
+        }}
+      >
+        <Text style={[styles.tabText, selectedTab === 'details' && styles.activeTabText]}>
+          Details
+        </Text>
       </TouchableOpacity>
     </View>
   );
 
-  const buttonContent = (
-    <TouchableOpacity style={styles.addToCartButton}>
-      <Text style={styles.buttonText}>Add to Cart - $99.99</Text>
-    </TouchableOpacity>
+  const top = (
+    <>
+      <View 
+        ref={overviewRef}
+        style={styles.contentSection}
+        onLayout={(event) => {
+          const { y } = event.nativeEvent.layout;
+          stickyScrollViewRef.current?.registerSection('overview', y);
+        }}
+      >
+        <Text style={styles.sectionTitle}>Overview</Text>
+        <Text style={styles.contentText}>
+          This demonstrates the StickyScrollView component with sticky button functionality.
+          Scroll down to see the button become sticky at the bottom of the screen.
+        </Text>
+        
+        <Text style={styles.sectionTitle}>How it works</Text>
+        <Text style={styles.contentText}>
+          • The button starts as part of the content{'\n'}
+          • When scrolling down, it smoothly becomes sticky{'\n'}
+          • When scrolling up, it rejoins the content flow{'\n'}
+          • Smooth animations with native performance
+        </Text>
+      </View>
+      
+      <View 
+        ref={featuresRef}
+        style={styles.contentSection}
+        onLayout={(event) => {
+          const { y } = event.nativeEvent.layout;
+          stickyScrollViewRef.current?.registerSection('features', y);
+        }}
+      >
+        <Text style={styles.sectionTitle}>Features</Text>
+        <Text style={styles.contentText}>
+          • Smooth sticky behavior with native performance{'\n'}
+          • Customizable content sections{'\n'}
+          • Responsive design for all screen sizes{'\n'}
+          • Easy integration with existing components
+        </Text>
+        
+        <Text style={styles.sectionTitle}>Benefits</Text>
+        <Text style={styles.contentText}>
+          • Improved user experience with always-accessible buttons{'\n'}
+          • Clean, modern UI design{'\n'}
+          • Optimized scrolling performance{'\n'}
+          • Cross-platform compatibility
+        </Text>
+      </View>
+      
+      <View 
+        ref={detailsRef}
+        style={styles.contentSection}
+        onLayout={(event) => {
+          const { y } = event.nativeEvent.layout;
+          stickyScrollViewRef.current?.registerSection('details', y);
+        }}
+      >
+        <Text style={styles.sectionTitle}>Technical Details</Text>
+        <Text style={styles.contentText}>
+          • Built with React Native core components{'\n'}
+          • Uses ScrollView with custom scroll handling{'\n'}
+          • Implements sticky positioning with absolute positioning{'\n'}
+          • Optimized with useRef and useEffect hooks
+        </Text>
+        
+        <Text style={styles.sectionTitle}>Implementation</Text>
+        <Text style={styles.contentText}>
+          • Custom scroll event handling{'\n'}
+          • Dynamic button state management{'\n'}
+          • Smooth opacity transitions{'\n'}
+          • Responsive layout calculations
+        </Text>
+      </View>
+    </>
   );
 
-  const bottomContent = (
-    <View>
-      <View ref={targetSectionRef}>
-        <Text style={styles.sectionTitle}>Customer Reviews</Text>
-        <Text>This is the reviews section...</Text>
+  const buttonContent = (
+    <View style={[styles.stickyButton, { alignSelf: 'stretch' }]}>
+      <Text style={styles.buttonText}>🎯 Sticky Button</Text>
+      <Text style={styles.buttonSubtext}>Tap me!</Text>
+    </View>
+  );
+
+  const footer = (
+    <View style={styles.stickyBottomContent}>
+      <View style={styles.contentBlock}>
+        <Text style={styles.sectionTitle}>Section 1</Text>
+        <Text style={styles.contentText}>
+          More content here to demonstrate scrolling. Keep scrolling down to see the sticky button behavior.
+        </Text>
       </View>
-      <Text style={styles.sectionTitle}>Specifications</Text>
-      <Text>Product specifications...</Text>
+      
+      <View style={styles.contentBlock}>
+        <Text style={styles.sectionTitle}>Section 2</Text>
+        <Text style={styles.contentText}>
+          The button will become sticky when it goes out of view from the bottom. This provides a great user experience for important actions.
+        </Text>
+      </View>
     </View>
   );
 
   return (
     <StickyScrollView
       ref={stickyScrollViewRef}
-      topContent={topContent}
+      header={header}
+      tabs={tabs}
+      top={top}
       buttonContent={buttonContent}
-      bottomContent={bottomContent}
-      stickyHeaderIndices={[0]} // Make the first item in bottomContent sticky
-    />
-  );
-};
-```
-
-### Example with Sticky Headers
-
-```tsx
-const StickyHeaderExample = () => {
-  const stickyScrollViewRef = useRef<StickyScrollViewRef>(null);
-
-  const topContent = (
-    <View>
-      <Text style={styles.header}>Product Catalog</Text>
-    </View>
-  );
-
-  const buttonContent = (
-    <TouchableOpacity style={styles.filterButton}>
-      <Text>Apply Filters</Text>
-    </TouchableOpacity>
-  );
-
-  const bottomContent = (
-    <View>
-      <View style={styles.categoryHeader}>
-        <Text style={styles.categoryTitle}>Electronics</Text>
-      </View>
-      <Text>Phone, Laptop, Tablet...</Text>
-      
-      <View style={styles.categoryHeader}>
-        <Text style={styles.categoryTitle}>Clothing</Text>
-      </View>
-      <Text>Shirts, Pants, Shoes...</Text>
-      
-      <View style={styles.categoryHeader}>
-        <Text style={styles.categoryTitle}>Home & Garden</Text>
-      </View>
-      <Text>Furniture, Decor, Tools...</Text>
-    </View>
-  );
-
-  return (
-    <StickyScrollView
-      ref={stickyScrollViewRef}
-      topContent={topContent}
-      buttonContent={buttonContent}
-      bottomContent={bottomContent}
-      stickyHeaderIndices={[0, 2, 4]} // Make category headers sticky
+      footer={footer}
+      stickyHeaderIndices={[1]} // Make tabs sticky (index 1)
+      onSectionChange={(sectionName) => {
+        if (sectionName === 'overview' || sectionName === 'features' || sectionName === 'details') {
+          setSelectedTab(sectionName);
+        }
+      }}
     />
   );
 };
@@ -201,19 +439,20 @@ const StickyHeaderExample = () => {
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
-| `topContent` | `React.ReactNode` | ✅ | Content to display above the button |
+| `header` | `React.ReactNode` | ✅ | Header content displayed at the top |
+| `tabs` | `React.ReactNode` | ✅ | Tab navigation that can be made sticky |
+| `top` | `React.ReactNode` | ✅ | Main content sections with navigation refs |
 | `buttonContent` | `React.ReactNode` | ✅ | The button that will become sticky |
-| `bottomContent` | `React.ReactNode` | ✅ | Content to display below the button |
-| `stickyHeaderIndices` | `number[]` | ❌ | Array of indices for sticky headers in bottomContent |
+| `footer` | `React.ReactNode` | ✅ | Additional content displayed at the bottom |
+| `stickyHeaderIndices` | `number[]` | ❌ | Array of indices for sticky headers (use `[1]` for sticky tabs) |
+| `onSectionChange` | `(sectionName: string) => void` | ❌ | Callback when scroll position changes sections |
 
 ## 🔗 Ref Access & ScrollTo Methods
 
 The component provides a custom ref interface with powerful scrollTo methods for programmatic scrolling control:
 
 ```tsx
-import { StickyScrollViewRef } from './components/StickyScrollView';
-
-const scrollViewRef = useRef<StickyScrollViewRef>(null);
+const stickyScrollViewRef = useRef<StickyScrollViewRef>(null);
 ```
 
 ### Available ScrollTo Methods
@@ -224,10 +463,32 @@ const scrollViewRef = useRef<StickyScrollViewRef>(null);
 | `scrollToComponent(ref, animated?, offset?)` | `ref: React.RefObject<View>, animated?: boolean, offset?: number` | Scroll to specific component reference with optional offset |
 | `scrollToTop(animated?)` | `animated?: boolean` | Scroll to the top of the content |
 | `scrollToBottom(animated?)` | `animated?: boolean` | Scroll to the bottom of the content |
+| `scrollToSection(sectionName, animated?)` | `sectionName: string, animated?: boolean` | Scroll to specific section by name |
+| `registerSection(sectionName, yPosition)` | `sectionName: string, yPosition: number` | Register section position for navigation |
+
+### Section Registration Example
+
+```tsx
+// In your content sections, register their positions
+<View 
+  ref={overviewRef}
+  style={styles.contentSection}
+  onLayout={(event) => {
+    const { y } = event.nativeEvent.layout;
+    stickyScrollViewRef.current?.registerSection('overview', y);
+  }}
+>
+  <Text style={styles.sectionTitle}>Overview</Text>
+  <Text style={styles.contentText}>Content...</Text>
+</View>
+```
 
 ### ScrollTo Examples
 
 ```tsx
+// Scroll to specific section
+stickyScrollViewRef.current?.scrollToSection('overview', true);
+
 // Scroll to specific position
 stickyScrollViewRef.current?.scrollTo(300, true);
 
@@ -241,93 +502,92 @@ stickyScrollViewRef.current?.scrollToTop(true);
 stickyScrollViewRef.current?.scrollToBottom(true);
 ```
 
-### Complete ScrollTo Implementation Example
-
-```tsx
-const ScrollableProductScreen = () => {
-  const stickyScrollViewRef = useRef<StickyScrollViewRef>(null);
-  const descriptionRef = useRef<View>(null);
-  const reviewsRef = useRef<View>(null);
-  const specsRef = useRef<View>(null);
-
-  const scrollToSection = (sectionRef: React.RefObject<View>, offset: number = 0) => {
-    stickyScrollViewRef.current?.scrollToComponent(sectionRef, true, offset);
-  };
-
-  return (
-    <View style={styles.container}>
-      {/* Navigation buttons */}
-      <View style={styles.navigation}>
-        <TouchableOpacity onPress={() => scrollToSection(descriptionRef)}>
-          <Text>Description</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => scrollToSection(reviewsRef)}>
-          <Text>Reviews</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => scrollToSection(specsRef)}>
-          <Text>Specs</Text>
-        </TouchableOpacity>
-      </View>
-
-      <StickyScrollView
-        ref={stickyScrollViewRef}
-        topContent={<ProductHeader />}
-        buttonContent={<AddToCartButton />}
-        bottomContent={
-          <View>
-            <View ref={descriptionRef}>
-              <Text style={styles.sectionTitle}>Description</Text>
-              <Text>Product description...</Text>
-            </View>
-            <View ref={reviewsRef}>
-              <Text style={styles.sectionTitle}>Reviews</Text>
-              <Text>Customer reviews...</Text>
-            </View>
-            <View ref={specsRef}>
-              <Text style={styles.sectionTitle}>Specifications</Text>
-              <Text>Product specs...</Text>
-            </View>
-          </View>
-        }
-        stickyHeaderIndices={[0, 2, 4]} // Make section titles sticky
-      />
-    </View>
-  );
-};
-```
-
 ## 🎯 How It Works
 
 ### 1. **Content Structure**
 ```
 ┌─────────────────┐
-│   topContent    │ ← Scrollable content above button
+│     header      │ ← Header content (index 0)
+├─────────────────┤
+│      tabs       │ ← Tab navigation (index 1) - Sticky!
+├─────────────────┤
+│      top        │ ← Main content sections (index 2+)
+│ [Section 1]     │
+│ [Section 2]     │
+│ [Section 3]     │
 ├─────────────────┤
 │  buttonContent  │ ← Button that becomes sticky
 ├─────────────────┤
-│  bottomContent  │ ← Scrollable content below button
-│   [Sticky]      │ ← Sticky headers (if stickyHeaderIndices provided)
+│     footer      │ ← Footer content
 └─────────────────┘
 ```
 
 ### 2. **Sticky Behavior**
-- **Normal State**: Button scrolls with content
-- **Sticky State**: Button sticks to screen bottom when scrolling down
-- **Transition**: Smooth animation between states
-- **Return**: Button rejoins content when scrolling back up
+- **Tabs**: Stick to the top when scrolling (using `stickyHeaderIndices={[1]}`)
+- **Button**: Becomes sticky at bottom when scrolling out of view
+- **Smooth Transitions**: Opacity and display changes for seamless UX
+- **Smart Thresholds**: Accounts for sticky tabs height in calculations
 
-### 3. **Smart Thresholds**
-- **Appear Threshold**: When button goes out of view from bottom
-- **Disappear Threshold**: When button comes back into view from bottom
-- **Dynamic Calculation**: Based on actual content layout and button dimensions
+### 3. **Section Navigation**
+- **Tab Clicks**: Scroll to corresponding sections
+- **Manual Scrolling**: Automatically highlight active tab
+- **Section Registration**: Components register their Y positions
+- **Synchronized State**: Tab selection stays in sync with scroll position
 
 ### 4. **ScrollTo Functionality**
-- **Component Reference**: Uses React refs to measure component positions
-- **Offset Support**: Allows fine-tuning of scroll position
-- **Smooth Animations**: Built-in animation support for better UX
-- **Type Safety**: Full TypeScript support with proper interfaces
+- **Section-based**: Navigate by section name
+- **Component-based**: Navigate by component reference
+- **Position-based**: Navigate by Y coordinate
+- **Offset Support**: Fine-tune scroll positions
 
 ## 🎨 Styling Guidelines
+
+### Tab Design Best Practices
+
+1. **Horizontal Layout**: Use `flexDirection: 'row'` for horizontal tabs
+2. **Equal Distribution**: Use `flex: 1` for equal tab widths
+3. **Touch Targets**: Minimum 44px height for accessibility
+4. **Visual Feedback**: Include active states and hover effects
+5. **Consistent Spacing**: Use consistent margins and padding
+
+### Example Tab Styles
+
+```tsx
+const tabStyles = StyleSheet.create({
+  tabContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    width: '100%',
+    alignSelf: 'stretch',
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+  },
+  tab: {
+    flex: 1,
+    minWidth: 80,
+    marginHorizontal: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+  },
+  activeTab: {
+    backgroundColor: '#007bff',
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#495057',
+  },
+  activeTabText: {
+    color: '#ffffff',
+  },
+});
+```
 
 ### Button Design Best Practices
 
@@ -341,7 +601,7 @@ const ScrollableProductScreen = () => {
 ```tsx
 const buttonStyles = StyleSheet.create({
   button: {
-    width: 280,           // Fixed width for consistency
+    width: '100%',        // Full width for consistency
     height: 80,           // Fixed height for consistency
     backgroundColor: '#007bff',
     borderRadius: 25,     // Rounded corners for modern look
@@ -356,25 +616,6 @@ const buttonStyles = StyleSheet.create({
 });
 ```
 
-### Sticky Header Styling
-
-```tsx
-const stickyHeaderStyles = StyleSheet.create({
-  categoryHeader: {
-    backgroundColor: '#f8f9fa',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
-  },
-  categoryTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#495057',
-  },
-});
-```
-
 ## 🔍 Technical Details
 
 ### Internal State Management
@@ -382,57 +623,67 @@ const stickyHeaderStyles = StyleSheet.create({
 - **`isButtonStuck`**: Boolean tracking sticky state
 - **`buttonLayout`**: Current button position and dimensions
 - **`cachedButtonHeight`**: Stored button height for calculations
-- **`topContentHeight`**: Measured height of top content
-- **`buttonAnimation`**: Animated value for smooth transitions
+- **`tabsHeight`**: Measured height of sticky tabs
+- **`sectionPositions`**: Registered section Y positions
+- **`isProgrammaticScroll`**: Flag to prevent section change during programmatic scrolls
 
-### Animation Properties
+### Sticky Logic
 
-- **Opacity**: Fade in/out for smooth appearance
-- **Height**: Dynamic height adjustment
-- **Scale**: Subtle scaling for visual feedback
-- **Transform**: Smooth position transitions
+- **Appear Threshold**: When button goes out of view from bottom
+- **Disappear Threshold**: When button comes back into view from bottom
+- **Tabs Height Adjustment**: Accounts for sticky tabs in threshold calculations
+- **Direction-based Logic**: Only changes state when scrolling in correct direction
 
-### Performance Optimizations
+### Performance Features
 
-- **Scroll Throttling**: 16ms throttle for smooth scrolling
+- **Scroll Event Throttling**: 16ms throttle for smooth 60fps scrolling
 - **Layout Caching**: Stores measured dimensions to avoid recalculation
-- **Efficient Animations**: Uses native driver where possible
-- **Ref-based Scrolling**: Efficient component-to-component navigation
+- **Efficient Section Detection**: Optimized algorithms for finding current section
+- **Debounced Section Changes**: Prevents excessive callback calls
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **Button Height Not Correct**
+1. **Tabs Not Horizontal**
+   - Ensure `flexDirection: 'row'` is set on tab container
+   - Use `flex: 1` on individual tabs for equal distribution
+   - Check that `width: '100%'` and `alignSelf: 'stretch'` are set
+
+2. **Sticky Tabs Not Working**
+   - Verify `stickyHeaderIndices={[1]}` is set
+   - Ensure tabs are the second child (index 1) of the ScrollView
+   - Check that header is index 0 and tabs are index 1
+
+3. **Button Height Not Correct**
    - Ensure button has explicit height in styles
    - Check that content fits within button dimensions
 
-2. **Sticky Behavior Not Working**
-   - Verify ScrollView is properly nested
-   - Check that button content is properly structured
+4. **Section Navigation Not Working**
+   - Verify sections are registered with `registerSection`
+   - Check that `onSectionChange` callback is provided
+   - Ensure section names match between registration and navigation
 
-3. **Animation Glitches**
-   - Ensure consistent button dimensions
-   - Check for conflicting style properties
-
-4. **ScrollTo Not Working**
+5. **ScrollTo Not Working**
    - Verify component refs are properly set
-   - Check that target components are mounted
+   - Check that target sections are registered
    - Ensure refs are passed to the correct components
 
 ### Debug Mode
 
 The component includes internal logging for development. Check console for:
 - Button height measurements
+- Tabs height measurements
 - Threshold calculations
 - State changes
+- Section registrations
 - ScrollTo method calls
 
 ## 📱 Platform Support
 
-- ✅ **iOS**: Full support with native animations
-- ✅ **Android**: Full support with elevation shadows
-- ✅ **Web**: Basic support (may need polyfills)
+- ✅ **iOS**: Full support with native animations and sticky headers
+- ✅ **Android**: Full support with elevation shadows and sticky headers
+- ✅ **Web**: Basic support (may need polyfills for sticky behavior)
 
 ## 🤝 Contributing
 
@@ -444,4 +695,4 @@ This component is provided as-is for educational and commercial use.
 
 ---
 
-**Note**: This component is designed to work with React Native's core APIs and doesn't require additional dependencies beyond the standard React Native installation. 
+**Note**: This component is designed to work with React Native's core APIs and doesn't require additional dependencies beyond the standard React Native installation. The sticky tabs functionality uses React Native's built-in `stickyHeaderIndices` prop for optimal performance. 

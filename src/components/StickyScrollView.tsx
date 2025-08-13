@@ -11,33 +11,61 @@ interface StickyScrollViewRef {
   scrollToComponent: (componentRef: React.RefObject<View>, animated?: boolean, offset?: number) => void;
   scrollToTop: (animated?: boolean) => void;
   scrollToBottom: (animated?: boolean) => void;
+  scrollToSection: (sectionName: string, animated?: boolean) => void;
+  registerSection: (sectionName: string, yPosition: number) => void;
 }
 
 interface StickyScrollViewProps {
-  topContent: React.ReactNode;
+  header: React.ReactNode;
+  tabs: React.ReactNode;
+  top: React.ReactNode;
   buttonContent: React.ReactNode;
-  bottomContent: React.ReactNode;
+  footer: React.ReactNode;
   stickyHeaderIndices?: number[];
+  onSectionChange?: (sectionName: string) => void;
 }
 
 const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(({
-  topContent,
+  header,
+  tabs,
+  top,
   buttonContent,
-  bottomContent,
+  footer,
   stickyHeaderIndices,
+  onSectionChange,
 }, ref) => {
   const [isButtonStuck, setIsButtonStuck] = useState(false);
   const [buttonLayout, setButtonLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const [cachedButtonHeight, setCachedButtonHeight] = useState(0);
-  const [topContentHeight, setTopContentHeight] = useState(0);
+  const [sectionPositions, setSectionPositions] = useState<Record<string, number>>({});
+  const [isProgrammaticScroll, setIsProgrammaticScroll] = useState(false);
+  const [tabsHeight, setTabsHeight] = useState(0);
   const buttonRef = useRef<View>(null);
-  const topContentRef = useRef<View>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const lastScrollDirection = useRef<'up' | 'down' | null>(null);
   const lastScrollY = useRef(0);
 
   const screenHeight = Dimensions.get('window').height;
+
+  // Helper function to get current section based on scroll position
+  const getCurrentSection = (scrollY: number): string | null => {
+    let currentSection: string | null = null;
+    let minDistance = Infinity;
+    
+    // Adjust scroll position to account for sticky tabs height
+    const adjustedScrollY = scrollY + tabsHeight;
+    
+    Object.entries(sectionPositions).forEach(([name, position]) => {
+      const distance = Math.abs(adjustedScrollY - position);
+      if (distance < minDistance) {
+        minDistance = distance;
+        currentSection = name;
+      }
+    });
+    
+    return currentSection;
+  };
 
   // Expose scrollTo methods to parent
   useImperativeHandle(ref, () => ({
@@ -57,6 +85,29 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
     },
     scrollToBottom: (animated: boolean = true) => {
       scrollViewRef.current?.scrollToEnd({ animated });
+    },
+    scrollToSection: (sectionName: string, animated: boolean = true) => {
+      const position = sectionPositions[sectionName];
+      if (position !== undefined) {
+        // Adjust position to account for sticky tabs height
+        const adjustedPosition = Math.max(0, position - tabsHeight);
+
+        setIsProgrammaticScroll(true);
+        scrollViewRef.current?.scrollTo({ y: adjustedPosition, animated });
+        
+        // Reset the flag after animation completes
+        if (animated) {
+          setTimeout(() => setIsProgrammaticScroll(false), 300);
+        } else {
+          setIsProgrammaticScroll(false);
+        }
+      } else {
+        console.warn(`Section '${sectionName}' not found. Available sections:`, Object.keys(sectionPositions));
+      }
+    },
+    registerSection: (sectionName: string, yPosition: number) => {
+      setSectionPositions(prev => ({ ...prev, [sectionName]: yPosition }));
+
     },
   }));
 
@@ -85,6 +136,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
   const measureButtonPosition = () => {
     if (buttonRef.current) {
       buttonRef.current.measure((x, y, width, height, pageX, pageY) => {
+
         setButtonLayout({ x, y, width, height });
         // Cache the button height when first measured
         if (height > 0 && cachedButtonHeight === 0) {
@@ -99,6 +151,15 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
     const scrollY = contentOffset.y;
     const currentScreenHeight = layoutMeasurement.height;
     
+    // Check for section changes and notify parent (only for manual scrolling)
+    if (onSectionChange && Object.keys(sectionPositions).length > 0 && !isProgrammaticScroll) {
+      const currentSection = getCurrentSection(scrollY);
+      if (currentSection) {
+
+        onSectionChange(currentSection);
+      }
+    }
+    
     let buttonTopPosition, buttonBottom;
     
     if (buttonLayout.height > 0) {
@@ -108,24 +169,24 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
       const scrollContentPadding = 20;
       const fallbackHeight = 8 * 95;
       
-      buttonTopPosition = (topContentHeight > 0 ? topContentHeight : fallbackHeight) + scrollContentPadding;
+      buttonTopPosition = fallbackHeight + scrollContentPadding;
       buttonBottom = buttonTopPosition + (cachedButtonHeight || 80); // Use cached height or fallback
     }
 
     
-    const buttonCenterY = buttonTopPosition;
-    const stickyAppearThreshold = buttonCenterY - currentScreenHeight + cachedButtonHeight;
-    const stickyDisappearThreshold = buttonTopPosition - currentScreenHeight + cachedButtonHeight + 10;
-    
-    const currentScrollDirection = scrollY > lastScrollY.current ? 'down' : 'up';
-    
-    if (scrollY > stickyDisappearThreshold && currentScrollDirection === 'down' && isButtonStuck) {
-      setIsButtonStuck(false);
-      lastScrollDirection.current = 'down';
-    } else if (scrollY < stickyAppearThreshold && currentScrollDirection === 'up' && !isButtonStuck) {
-      lastScrollDirection.current = 'up';
-      setIsButtonStuck(true);
-    }
+          const buttonCenterY = buttonTopPosition;
+      const stickyAppearThreshold = buttonCenterY - currentScreenHeight + cachedButtonHeight;
+      const stickyDisappearThreshold = buttonTopPosition - currentScreenHeight + cachedButtonHeight + 10;
+      
+      const currentScrollDirection = scrollY > lastScrollY.current ? 'down' : 'up';
+      
+      if (scrollY > stickyDisappearThreshold + tabsHeight * 3 && currentScrollDirection === 'down' && isButtonStuck) {
+        setIsButtonStuck(false);
+        lastScrollDirection.current = 'down';
+      } else if (scrollY < stickyAppearThreshold && currentScrollDirection === 'up' && !isButtonStuck) {
+        lastScrollDirection.current = 'up';
+        setIsButtonStuck(true);
+      }
     
     lastScrollY.current = scrollY;
   };
@@ -141,16 +202,22 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
         showsVerticalScrollIndicator={true}
         stickyHeaderIndices={stickyHeaderIndices}
       >
-        {/* Top Content */}
+        {/* Header - Index 0 */}
+        {header}
+        
+        {/* Tabs - Index 1 (Will be sticky) */}
         <View 
-          ref={topContentRef} 
+          style={{ width: '100%', alignSelf: 'stretch' }}
           onLayout={(event) => {
             const { height } = event.nativeEvent.layout;
-            setTopContentHeight(height);
+            setTabsHeight(height);
           }}
         >
-          {topContent}
+          {tabs}
         </View>
+        
+        {/* Top - Index 2 */}
+        {top}
 
         {/* Button positioned in content */}
         <View
@@ -178,9 +245,9 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
           </View>
         </View>
 
-        {/* Bottom Content */}
+        {/* Footer */}
         <View>
-          {bottomContent}
+          {footer}
         </View>
       </ScrollView>
 
@@ -213,6 +280,8 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 100,
+    width: '100%',
+    alignSelf: 'stretch',
   },
   buttonContainer: {
     alignItems: 'center',
