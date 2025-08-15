@@ -41,6 +41,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
   const [cachedButtonCenterY, setCachedButtonCenterY] = useState(0);
   const [sectionPositions, setSectionPositions] = useState<Record<string, number>>({});
   const [isProgrammaticScroll, setIsProgrammaticScroll] = useState(false);
+  const [tabsHeight, setTabsHeight] = useState(0);
   const buttonRef = useRef<View>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -55,42 +56,33 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
   const getCurrentSection = useCallback((scrollY: number): string | null => {
     const sectionKeys = Object.keys(sectionPositions);
     if (sectionKeys.length === 0) return null;
-
+    
     let currentSection: string | null = null;
     let minDistance = Infinity;
 
-    // Since there's no sticky header, tabs should activate when section top touches viewport top
-    // This happens when: scrollY = sectionPosition
-    // So: sectionPosition = scrollY
-    const viewportTop = scrollY;
+    // Adjust scroll position to account for sticky tabs height
+    const adjustedScrollY = scrollY + tabsHeight;
 
     // Use for...of for better performance than forEach
     for (const [name, position] of Object.entries(sectionPositions)) {
-      // Calculate distance from section top to viewport top
-      // When distance = 0, section top touches viewport top exactly
-      const distance = Math.abs(position - viewportTop);
-
-
-
+      const distance = Math.abs(adjustedScrollY - position);
       if (distance < minDistance) {
         minDistance = distance;
         currentSection = name;
-        // Early exit if we find a very close match (5px for precision)
-        if (distance < 5) break;
+        // Early exit if we find a very close match
+        if (distance < 10) break;
       }
     }
 
-
-
     return currentSection;
-  }, [sectionPositions]);
+  }, [sectionPositions, tabsHeight]);
 
   // Debounced section change handler to reduce excessive callbacks
   const handleSectionChange = useCallback((sectionName: string) => {
     if (debouncedSectionChange.current) {
       clearTimeout(debouncedSectionChange.current);
     }
-
+    
     debouncedSectionChange.current = setTimeout(() => {
       onSectionChange?.(sectionName);
     }, 50); // Reduced from 100ms to 50ms for better responsiveness
@@ -118,11 +110,11 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
     scrollToSection: (sectionName: string, animated: boolean = true) => {
       const position = sectionPositions[sectionName];
       if (position !== undefined) {
-        // Since there's no sticky header, use position directly
-        const scrollPosition = Math.max(0, position);
+        // Adjust position to account for sticky tabs height
+        const adjustedPosition = Math.max(0, position - tabsHeight);
 
         setIsProgrammaticScroll(true);
-        scrollViewRef.current?.scrollTo({ y: scrollPosition, animated });
+        scrollViewRef.current?.scrollTo({ y: adjustedPosition, animated });
 
         // Reset the flag after animation completes
         if (animated) {
@@ -135,10 +127,8 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
       }
     },
     registerSection: (sectionName: string, yPosition: number) => {
-      // yPosition is now absolute position from measure method
-
-
       setSectionPositions(prev => ({ ...prev, [sectionName]: yPosition }));
+
     },
   }));
 
@@ -177,11 +167,16 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
 
   const measureButtonPosition = useCallback(() => {
     if (!buttonRef.current) return;
-
+    
     buttonRef.current.measure((x, y, width, height, pageX, pageY) => {
       // Cache the button height when first measured
       if (height > 0 && cachedButtonHeight === 0) {
         setCachedButtonHeight(height);
+      }
+      // Only update cached center Y if position actually changed
+      if (height > 0 && pageY > 0) {
+        const centerY = pageY + (height / 2);
+        // setCachedButtonCenterY(centerY);
       }
     });
   }, [cachedButtonHeight]);
@@ -205,7 +200,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
 
     // Use memoized thresholds when available, otherwise calculate dynamically
     let stickyAppearThreshold, stickyDisappearThreshold;
-
+    
     if (cachedButtonCenterY === 0 || cachedButtonHeight === 0) return;
 
     stickyAppearThreshold = cachedButtonCenterY - currentScreenHeight + cachedButtonHeight / 2 - externalOffset;
@@ -214,7 +209,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
     const currentScrollDirection = scrollY > lastScrollY.current ? 'down' : 'up';
 
     // Only process sticky logic if scroll direction changed or button state needs to change
-    const shouldProcessSticky = currentScrollDirection !== lastScrollDirection.current ||
+    const shouldProcessSticky = currentScrollDirection !== lastScrollDirection.current || 
       (scrollY > stickyDisappearThreshold && isButtonStuck) ||
       (scrollY < stickyAppearThreshold && !isButtonStuck);
 
@@ -230,6 +225,12 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
 
     lastScrollY.current = scrollY;
   }, [onSectionChange, sectionPositions, isProgrammaticScroll, getCurrentSection, handleSectionChange, isButtonStuck, cachedButtonCenterY, cachedButtonHeight, externalOffset]);
+
+  // Optimize onLayout handlers with useCallback
+  const handleTabsLayout = useCallback((event: any) => {
+    const { height } = event.nativeEvent.layout;
+    setTabsHeight(height);
+  }, []);
 
   const handleButtonContentLayout = useCallback((event: any) => {
     const { height } = event.nativeEvent.layout;
@@ -265,7 +266,10 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
         {header}
 
         {/* Tabs - Index 1 (Will be sticky) */}
-        <View style={{ width: '100%', alignSelf: 'stretch' }}>
+        <View
+          style={{ width: '100%', alignSelf: 'stretch' }}
+          onLayout={handleTabsLayout}
+        >
           {tabs}
         </View>
 
