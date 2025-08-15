@@ -18,13 +18,13 @@ function App() {
   const [selectedProject, setSelectedProject] = useState('india');
   const [currentScreen, setCurrentScreen] = useState<'analytics' | 'sticky'>('analytics');
   const [selectedTab, setSelectedTab] = useState<'overview' | 'features' | 'details'>('overview');
-  
+  const [stickyHeaderHeight, setStickyHeaderHeight] = useState(0);
   // Refs for content sections
   const overviewRef = useRef<View>(null);
   const featuresRef = useRef<View>(null);
   const detailsRef = useRef<View>(null);
   const stickyScrollViewRef = useRef<any>(null);
-  
+
   const {
     currentProject,
     setCurrentProject,
@@ -45,17 +45,17 @@ function App() {
         const projectConfig = getProjectConfig(selectedProject);
         if (projectConfig) {
           await initializeCurrentProject(projectConfig);
-          
+
           // Log app start event
           await logEvent('app_start', {
             app_version: '1.0.0',
             platform: 'react-native',
             project: currentProject,
           });
-          
+
           // Log page view for main screen
           await logPageView('Main Screen', 'app://main');
-          
+
           console.log(`📊 Google Analytics initialized for ${currentProject}`);
         }
       } catch (error) {
@@ -120,7 +120,7 @@ function App() {
         timestamp: new Date().toISOString(),
         event_type: 'multi_project_test',
       }, ['india', 'us', 'uk']);
-      
+
       const successCount = Object.values(results).filter(Boolean).length;
       Alert.alert('Success', `Event logged to ${successCount} projects!`);
     } catch (error) {
@@ -147,108 +147,113 @@ function App() {
       <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
         {/* <NewAppScreen templateFileName="App.tsx" /> */}
-        
+
         {/* Multi-Project Analytics Demo */}
         <View style={styles.analyticsContainer}>
           <Text style={styles.title}>📊 Multi-Project Analytics</Text>
           <Text style={styles.subtitle}>Current Project: {currentProject}</Text>
-          
+
           {/* Project Selection */}
           <View style={styles.countryContainer}>
             <Text style={styles.sectionTitle}>Select Project:</Text>
             <View style={styles.countryButtons}>
-              <Button 
-                title="🇮🇳 India" 
+              <Button
+                title="🇮🇳 India"
                 onPress={() => handleProjectChange('india')}
                 color={selectedProject === 'india' ? '#34C759' : '#007AFF'}
               />
               <View style={styles.buttonSpacer} />
-              <Button 
-                title="🇺🇸 US" 
+              <Button
+                title="🇺🇸 US"
                 onPress={() => handleProjectChange('us')}
                 color={selectedProject === 'us' ? '#34C759' : '#007AFF'}
               />
               <View style={styles.buttonSpacer} />
-              <Button 
-                title="🇬🇧 UK" 
+              <Button
+                title="🇬🇧 UK"
                 onPress={() => handleProjectChange('uk')}
                 color={selectedProject === 'uk' ? '#34C759' : '#007AFF'}
               />
             </View>
           </View>
-          
+
           <View style={styles.buttonSpacer} />
-          
+
           {/* Event Buttons */}
           <Text style={styles.sectionTitle}>Test Events:</Text>
-          
-          <Button 
-            title="📊 Log Test Event" 
+
+          <Button
+            title="📊 Log Test Event"
             onPress={handleTestEvent}
             color="#007AFF"
           />
-          
+
           <View style={styles.buttonSpacer} />
-          
-          <Button 
-            title="👤 Log User Action" 
+
+          <Button
+            title="👤 Log User Action"
             onPress={handleUserAction}
             color="#34C759"
           />
-          
+
           <View style={styles.buttonSpacer} />
-          
-          <Button 
-            title="❌ Log Error Event" 
+
+          <Button
+            title="❌ Log Error Event"
             onPress={handleErrorLog}
             color="#FF3B30"
           />
-          
+
           <View style={styles.buttonSpacer} />
-          
-          <Button 
-            title="🖱️ Log Button Click" 
+
+          <Button
+            title="🖱️ Log Button Click"
             onPress={handleButtonClick}
             color="#FF9500"
           />
-          
+
           <View style={styles.buttonSpacer} />
-          
-          <Button 
-            title="📊 Log Multi-Project Event" 
+
+          <Button
+            title="📊 Log Multi-Project Event"
             onPress={handleMultiProjectEvent}
             color="#AF52DE"
           />
-          
+
           <View style={styles.buttonSpacer} />
-          
-          <Button 
-            title="🎯 StickyScrollView Demo" 
+
+          <Button
+            title="🎯 StickyScrollView Demo"
             onPress={() => setCurrentScreen('sticky')}
             color="#FF6B6B"
           />
         </View>
       </SafeAreaView>
-      
+
       {/* StickyScrollView Example Screen */}
       {currentScreen === 'sticky' && (
         <View style={styles.stickyScreen}>
-          <View style={styles.stickyHeader}>
+          <View style={styles.stickyHeader}
+            onLayout={(event) => {
+              const { height } = event.nativeEvent.layout;
+              setStickyHeaderHeight(height);
+            }}>
             <Text style={styles.stickyTitle}>🎯 StickyScrollView Demo</Text>
             <Text style={styles.stickySubtitle}>Scroll down to see the button become sticky</Text>
-            
 
-            
-            <Button 
-              title="⬅️ Back to Analytics" 
+
+
+            <Button
+              title="⬅️ Back to Analytics"
               onPress={() => setCurrentScreen('analytics')}
               color="#6c757d"
             />
           </View>
-          
+
           <StickyScrollView
             ref={stickyScrollViewRef}
             stickyHeaderIndices={[1]}
+            externalOffset={stickyHeaderHeight}
             onSectionChange={(sectionName) => {
               if (sectionName === 'overview' || sectionName === 'features' || sectionName === 'details') {
                 setSelectedTab(sectionName);
@@ -264,8 +269,8 @@ function App() {
             }
             top={
               <>
-                <View 
-                  ref={overviewRef} 
+                <View
+                  ref={overviewRef}
                   style={styles.contentSection}
                   onLayout={(event) => {
                     const { y } = event.nativeEvent.layout;
@@ -277,7 +282,7 @@ function App() {
                     This demonstrates the StickyScrollView component with sticky button functionality.
                     Scroll down to see the button become sticky at the bottom of the screen.
                   </Text>
-                  
+
                   <Text style={styles.sectionTitle}>How it works</Text>
                   <Text style={styles.contentText}>
                     • The button starts as part of the content{'\n'}
@@ -286,9 +291,9 @@ function App() {
                     • Smooth animations with native performance
                   </Text>
                 </View>
-                
-                <View 
-                  ref={featuresRef} 
+
+                <View
+                  ref={featuresRef}
                   style={styles.contentSection}
                   onLayout={(event) => {
                     const { y } = event.nativeEvent.layout;
@@ -302,7 +307,7 @@ function App() {
                     • Responsive design for all screen sizes{'\n'}
                     • Easy integration with existing components
                   </Text>
-                  
+
                   <Text style={styles.sectionTitle}>Benefits</Text>
                   <Text style={styles.contentText}>
                     • Improved user experience with always-accessible buttons{'\n'}
@@ -311,9 +316,9 @@ function App() {
                     • Cross-platform compatibility
                   </Text>
                 </View>
-                
-                <View 
-                  ref={detailsRef} 
+
+                <View
+                  ref={detailsRef}
                   style={styles.contentSection}
                   onLayout={(event) => {
                     const { y } = event.nativeEvent.layout;
@@ -327,7 +332,7 @@ function App() {
                     • Implements sticky positioning with absolute positioning{'\n'}
                     • Optimized with useRef and useEffect hooks
                   </Text>
-                  
+
                   <Text style={styles.sectionTitle}>Implementation</Text>
                   <Text style={styles.contentText}>
                     • Custom scroll event handling{'\n'}
@@ -340,7 +345,7 @@ function App() {
             }
             tabs={
               <View style={styles.tabContainer}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[styles.tab, selectedTab === 'overview' && styles.activeTab]}
                   onPress={() => {
                     setSelectedTab('overview');
@@ -351,8 +356,8 @@ function App() {
                     Overview
                   </Text>
                 </TouchableOpacity>
-                
-                <TouchableOpacity 
+
+                <TouchableOpacity
                   style={[styles.tab, selectedTab === 'features' && styles.activeTab]}
                   onPress={() => {
                     setSelectedTab('features');
@@ -363,8 +368,8 @@ function App() {
                     Features
                   </Text>
                 </TouchableOpacity>
-                
-                <TouchableOpacity 
+
+                <TouchableOpacity
                   style={[styles.tab, selectedTab === 'details' && styles.activeTab]}
                   onPress={() => {
                     setSelectedTab('details');
@@ -391,14 +396,14 @@ function App() {
                     More content here to demonstrate scrolling. Keep scrolling down to see the sticky button behavior.
                   </Text>
                 </View>
-                
+
                 <View style={styles.contentBlock}>
                   <Text style={styles.sectionTitle}>Section 2</Text>
                   <Text style={styles.contentText}>
                     The button will become sticky when it goes out of view from the bottom. This provides a great user experience for important actions.
                   </Text>
                 </View>
-                
+
                 <View style={styles.contentBlock}>
                   <Text style={styles.sectionTitle}>Section 3</Text>
                   <Text style={styles.contentText}>
@@ -576,6 +581,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   contentSection: {
+    paddingHorizontal: 20,
     marginBottom: 30,
     paddingBottom: 20,
     borderBottomWidth: 1,

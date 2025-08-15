@@ -23,6 +23,7 @@ interface StickyScrollViewProps {
   footer: React.ReactNode;
   stickyHeaderIndices?: number[];
   onSectionChange?: (sectionName: string) => void;
+  externalOffset?: number;
 }
 
 const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(({
@@ -33,9 +34,9 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
   footer,
   stickyHeaderIndices,
   onSectionChange,
+  externalOffset = 0,
 }, ref) => {
   const [isButtonStuck, setIsButtonStuck] = useState(false);
-  const [buttonLayout, setButtonLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const [cachedButtonHeight, setCachedButtonHeight] = useState(0);
   const [cachedButtonCenterY, setCachedButtonCenterY] = useState(0);
   const [sectionPositions, setSectionPositions] = useState<Record<string, number>>({});
@@ -120,7 +121,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
           const buttonCenterY = pageY + (height / 2);
           const stickyAppearThreshold = buttonCenterY - screenHeight + 50;
 
-          // Cache the button center Y position
+          // Only cache the button center Y position if not already cached
           if (height > 0 && pageY > 0) {
             setCachedButtonCenterY(buttonCenterY);
           }
@@ -142,15 +143,14 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
   const measureButtonPosition = () => {
     if (buttonRef.current) {
       buttonRef.current.measure((x, y, width, height, pageX, pageY) => {
-        setButtonLayout({ x, y, width, height });
         // Cache the button height when first measured
         if (height > 0 && cachedButtonHeight === 0) {
           setCachedButtonHeight(height);
         }
-        // Cache the button center Y position
+        // Only update cached center Y if position actually changed
         if (height > 0 && pageY > 0) {
           const centerY = pageY + (height / 2);
-          setCachedButtonCenterY(centerY);
+          // setCachedButtonCenterY(centerY);
         }
       });
     }
@@ -169,30 +169,8 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
       }
     }
 
-    let buttonTopPosition, buttonBottom;
-
-    if (buttonLayout.height > 0) {
-      buttonTopPosition = buttonLayout.y;
-      buttonBottom = buttonTopPosition + buttonLayout.height;
-    } else {
-      const scrollContentPadding = 20;
-              const fallbackHeight = 8 * 95;
-        buttonTopPosition = cachedButtonCenterY;
-      buttonBottom = buttonTopPosition + (cachedButtonHeight || 80); // Use cached height or fallback
-    }
-
-    
-    // Use cached button center position when button is not visible
-    let buttonCenterY;
-    if (buttonLayout.height > 0) {
-      buttonCenterY = buttonTopPosition;
-    } else {
-      // Use cached center position when button layout is not available
-      buttonCenterY = cachedButtonCenterY > 0 ? cachedButtonCenterY : buttonTopPosition;
-    }
-    
-    const stickyAppearThreshold = buttonCenterY - currentScreenHeight + cachedButtonHeight;
-    const stickyDisappearThreshold = buttonTopPosition - currentScreenHeight + cachedButtonHeight / 2;
+    const stickyAppearThreshold = cachedButtonCenterY - currentScreenHeight + cachedButtonHeight / 2 - externalOffset;
+    const stickyDisappearThreshold = cachedButtonCenterY - currentScreenHeight + cachedButtonHeight / 2 - externalOffset;
 
     const currentScrollDirection = scrollY > lastScrollY.current ? 'down' : 'up';
 
@@ -208,7 +186,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
   };
 
   return (
-    <View style={styles.container}> 
+    <View style={styles.container}>
       <ScrollView
         ref={scrollViewRef}
         style={styles.scrollView}
@@ -242,9 +220,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
           style={[
             styles.buttonContainer,
             {
-              opacity: isButtonStuck ? 0 : 1,
               display: isButtonStuck ? 'none' : 'flex',
-              marginVertical: isButtonStuck ? 0 : 30,
             },
           ]}
         >
@@ -254,11 +230,6 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
               const { height } = event.nativeEvent.layout;
               if (height > 0 && cachedButtonHeight === 0) {
                 setCachedButtonHeight(height);
-              }
-              // Also cache center position if we have button layout
-              if (height > 0 && buttonLayout.y > 0) {
-                const centerY = buttonLayout.y + (height / 2);
-                setCachedButtonCenterY(centerY);
               }
             }}
           >
@@ -279,11 +250,6 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
               const { height } = event.nativeEvent.layout;
               if (height > 0 && cachedButtonHeight === 0) {
                 setCachedButtonHeight(height);
-              }
-              // Also cache center position if we have button layout
-              if (height > 0 && buttonLayout.y > 0) {
-                const centerY = buttonLayout.y + (height / 2);
-                setCachedButtonCenterY(centerY);
               }
             }}
           >
