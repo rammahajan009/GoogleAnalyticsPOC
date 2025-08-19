@@ -12,6 +12,10 @@ import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAnalytics } from './src/hooks/useAnalytics';
 import { getProjectIds, getProjectConfig } from './src/config/AnalyticsConfig';
 import StickyScrollView from './src/components/StickyScrollView';
+import Provider from './src/store/Provider';
+import ReduxSagaExample from './src/components/ReduxSagaExample';
+
+
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -143,279 +147,18 @@ function App() {
   };
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        {/* <NewAppScreen templateFileName="App.tsx" /> */}
-
-        {/* Multi-Project Analytics Demo */}
-        <View style={styles.analyticsContainer}>
-          <Text style={styles.title}>📊 Multi-Project Analytics</Text>
-          <Text style={styles.subtitle}>Current Project: {currentProject}</Text>
-
-          {/* Project Selection */}
-          <View style={styles.countryContainer}>
-            <Text style={styles.sectionTitle}>Select Project:</Text>
-            <View style={styles.countryButtons}>
-              <Button
-                title="🇮🇳 India"
-                onPress={() => handleProjectChange('india')}
-                color={selectedProject === 'india' ? '#34C759' : '#007AFF'}
-              />
-              <View style={styles.buttonSpacer} />
-              <Button
-                title="🇺🇸 US"
-                onPress={() => handleProjectChange('us')}
-                color={selectedProject === 'us' ? '#34C759' : '#007AFF'}
-              />
-              <View style={styles.buttonSpacer} />
-              <Button
-                title="🇬🇧 UK"
-                onPress={() => handleProjectChange('uk')}
-                color={selectedProject === 'uk' ? '#34C759' : '#007AFF'}
-              />
-            </View>
-          </View>
-
-          <View style={styles.buttonSpacer} />
-
-          {/* Event Buttons */}
-          <Text style={styles.sectionTitle}>Test Events:</Text>
-
-          <Button
-            title="📊 Log Test Event"
-            onPress={handleTestEvent}
-            color="#007AFF"
-          />
-
-          <View style={styles.buttonSpacer} />
-
-          <Button
-            title="👤 Log User Action"
-            onPress={handleUserAction}
-            color="#34C759"
-          />
-
-          <View style={styles.buttonSpacer} />
-
-          <Button
-            title="❌ Log Error Event"
-            onPress={handleErrorLog}
-            color="#FF3B30"
-          />
-
-          <View style={styles.buttonSpacer} />
-
-          <Button
-            title="🖱️ Log Button Click"
-            onPress={handleButtonClick}
-            color="#FF9500"
-          />
-
-          <View style={styles.buttonSpacer} />
-
-          <Button
-            title="📊 Log Multi-Project Event"
-            onPress={handleMultiProjectEvent}
-            color="#AF52DE"
-          />
-
-          <View style={styles.buttonSpacer} />
-
-          <Button
-            title="🎯 StickyScrollView Demo"
-            onPress={() => setCurrentScreen('sticky')}
-            color="#FF6B6B"
-          />
-        </View>
-      </SafeAreaView>
-
-      {/* StickyScrollView Example Screen */}
-      {currentScreen === 'sticky' && (
-        <View style={styles.stickyScreen}>
-          <View style={styles.stickyHeader}
-            onLayout={(event) => {
-              const { height } = event.nativeEvent.layout;
-              setStickyHeaderHeight(height);
-            }}>
-            <Text style={styles.stickyTitle}>🎯 StickyScrollView Demo</Text>
-            <Text style={styles.stickySubtitle}>Scroll down to see the button become sticky</Text>
+    <Provider>
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+          {/* <NewAppScreen templateFileName="App.tsx" /> */}
+          <ReduxSagaExample />
+        </SafeAreaView>
 
 
 
-            <Button
-              title="⬅️ Back to Analytics"
-              onPress={() => setCurrentScreen('analytics')}
-              color="#6c757d"
-            />
-          </View>
-
-          <StickyScrollView
-            ref={stickyScrollViewRef}
-            stickyHeaderIndices={[1]}
-            externalOffset={stickyHeaderHeight}
-            onSectionChange={(sectionName) => {
-              if (sectionName === 'overview' || sectionName === 'features' || sectionName === 'details') {
-                setSelectedTab(sectionName);
-              }
-            }}
-            header={
-              <View style={styles.contentHeader}>
-                <Text style={styles.contentHeaderTitle}>📚 Content Sections</Text>
-                <Text style={styles.contentHeaderSubtitle}>
-                  Navigate through different sections using the tabs below. Each section contains detailed information about the StickyScrollView component.
-                </Text>
-              </View>
-            }
-            top={
-              <>
-                <View
-                  ref={overviewRef}
-                  style={styles.contentSection}
-                  onLayout={(event) => {
-                    const { y } = event.nativeEvent.layout;
-                    stickyScrollViewRef.current?.registerSection('overview', y);
-                  }}
-                >
-                  <Text style={styles.sectionTitle}>Overview</Text>
-                  <Text style={styles.contentText}>
-                    This demonstrates the StickyScrollView component with sticky button functionality.
-                    Scroll down to see the button become sticky at the bottom of the screen.
-                  </Text>
-
-                  <Text style={styles.sectionTitle}>How it works</Text>
-                  <Text style={styles.contentText}>
-                    • The button starts as part of the content{'\n'}
-                    • When scrolling down, it smoothly becomes sticky{'\n'}
-                    • When scrolling up, it rejoins the content flow{'\n'}
-                    • Smooth animations with native performance
-                  </Text>
-                </View>
-
-                <View
-                  ref={featuresRef}
-                  style={styles.contentSection}
-                  onLayout={(event) => {
-                    const { y } = event.nativeEvent.layout;
-                    stickyScrollViewRef.current?.registerSection('features', y);
-                  }}
-                >
-                  <Text style={styles.sectionTitle}>Features</Text>
-                  <Text style={styles.contentText}>
-                    • Smooth sticky behavior with native performance{'\n'}
-                    • Customizable content sections{'\n'}
-                    • Responsive design for all screen sizes{'\n'}
-                    • Easy integration with existing components
-                  </Text>
-
-                  <Text style={styles.sectionTitle}>Benefits</Text>
-                  <Text style={styles.contentText}>
-                    • Improved user experience with always-accessible buttons{'\n'}
-                    • Clean, modern UI design{'\n'}
-                    • Optimized scrolling performance{'\n'}
-                    • Cross-platform compatibility
-                  </Text>
-                </View>
-
-                <View
-                  ref={detailsRef}
-                  style={styles.contentSection}
-                  onLayout={(event) => {
-                    const { y } = event.nativeEvent.layout;
-                    stickyScrollViewRef.current?.registerSection('details', y);
-                  }}
-                >
-                  <Text style={styles.sectionTitle}>Technical Details</Text>
-                  <Text style={styles.contentText}>
-                    • Built with React Native core components{'\n'}
-                    • Uses ScrollView with custom scroll handling{'\n'}
-                    • Implements sticky positioning with absolute positioning{'\n'}
-                    • Optimized with useRef and useEffect hooks
-                  </Text>
-
-                  <Text style={styles.sectionTitle}>Implementation</Text>
-                  <Text style={styles.contentText}>
-                    • Custom scroll event handling{'\n'}
-                    • Dynamic button state management{'\n'}
-                    • Smooth opacity transitions{'\n'}
-                    • Responsive layout calculations
-                  </Text>
-                </View>
-              </>
-            }
-            tabs={
-              <View style={styles.tabContainer}>
-                <TouchableOpacity
-                  style={[styles.tab, selectedTab === 'overview' && styles.activeTab]}
-                  onPress={() => {
-                    setSelectedTab('overview');
-                    stickyScrollViewRef.current?.scrollToSection('overview', true);
-                  }}
-                >
-                  <Text style={[styles.tabText, selectedTab === 'overview' && styles.activeTabText]}>
-                    Overview
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.tab, selectedTab === 'features' && styles.activeTab]}
-                  onPress={() => {
-                    setSelectedTab('features');
-                    stickyScrollViewRef.current?.scrollToSection('features', true);
-                  }}
-                >
-                  <Text style={[styles.tabText, selectedTab === 'features' && styles.activeTabText]}>
-                    Features
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.tab, selectedTab === 'details' && styles.activeTab]}
-                  onPress={() => {
-                    setSelectedTab('details');
-                    stickyScrollViewRef.current?.scrollToSection('details', true);
-                  }}
-                >
-                  <Text style={[styles.tabText, selectedTab === 'details' && styles.activeTabText]}>
-                    Details
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            }
-            buttonContent={
-              <View style={[styles.stickyButton, { alignSelf: 'stretch' }]}>
-                <Text style={styles.buttonText}>🎯 Sticky Button</Text>
-                <Text style={styles.buttonSubtext}>Tap me!</Text>
-              </View>
-            }
-            footer={
-              <View style={styles.stickyBottomContent}>
-                <View style={styles.contentBlock}>
-                  <Text style={styles.sectionTitle}>Section 1</Text>
-                  <Text style={styles.contentText}>
-                    More content here to demonstrate scrolling. Keep scrolling down to see the sticky button behavior.
-                  </Text>
-                </View>
-
-                <View style={styles.contentBlock}>
-                  <Text style={styles.sectionTitle}>Section 2</Text>
-                  <Text style={styles.contentText}>
-                    The button will become sticky when it goes out of view from the bottom. This provides a great user experience for important actions.
-                  </Text>
-                </View>
-
-                <View style={styles.contentBlock}>
-                  <Text style={styles.sectionTitle}>Section 3</Text>
-                  <Text style={styles.contentText}>
-                    Final section. Try scrolling up and down to see the complete sticky button behavior in action.
-                  </Text>
-                </View>
-              </View>
-            }
-          />
-        </View>
-      )}
-    </SafeAreaProvider>
+      </SafeAreaProvider>
+    </Provider>
   );
 }
 
@@ -587,6 +330,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
-});
 
-export default App;
+
+}); export default App;
+
