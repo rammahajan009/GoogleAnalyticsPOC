@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
@@ -22,8 +21,9 @@ import {
 } from '../store/slices/userSlice';
 import { withErrorBoundary } from '../utils/http-client/withErrorBoundary';
 import { Config } from 'react-native-config';
-
-
+import Typography from './Typography';
+import Button from './Button';
+import { ResponsiveStyleSheet } from '../utils/ResponsiveStyle/ResponsiveStyleSheet';
 
 const ReduxSagaExampleContent: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -37,8 +37,6 @@ const ReduxSagaExampleContent: React.FC = () => {
   // Local state
   const [email, setEmail] = useState('user@example.com');
   const [password, setPassword] = useState('password123');
-
-
 
   // Handle login
   const handleLogin = () => {
@@ -74,8 +72,6 @@ const ReduxSagaExampleContent: React.FC = () => {
     dispatch(clearUserError());
   };
 
-
-
   // Auto-fetch users when authenticated
   useEffect(() => {
     if (isAuthenticated && users.length === 0) {
@@ -83,20 +79,21 @@ const ReduxSagaExampleContent: React.FC = () => {
     }
   }, [isAuthenticated]);
 
-
-
   return (
     <ScrollView style={styles.container}>
-
+      <Typography h2 style={styles.title}>
+        🔄 Redux Saga + HTTP Client {Config.API_BASE_URL}
+      </Typography>
       
-      <Text style={styles.title}>🔄 Redux Saga + HTTP Client {Config.API_BASE_URL}</Text>
-      <Text style={styles.subtitle}>
+      <Typography body2 style={styles.subtitle}>
         Example of using Redux Saga with the HTTP client utility
-      </Text>
+      </Typography>
 
       {/* Authentication Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>🔐 Authentication</Text>
+        <Typography h2 style={styles.sectionTitle}>
+          🔐 Authentication
+        </Typography>
         
         {!isAuthenticated ? (
           <View>
@@ -115,46 +112,43 @@ const ReduxSagaExampleContent: React.FC = () => {
               onChangeText={setPassword}
               secureTextEntry
             />
-            <TouchableOpacity
-              style={[styles.button, styles.primaryButton]}
+            <Button
+              primary
               onPress={handleLogin}
-              disabled={authLoading}
+              loading={authLoading}
+              fullWidth
             >
-              {authLoading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text style={styles.buttonText}>Login</Text>
-              )}
-            </TouchableOpacity>
+              Find a Job
+            </Button>
           </View>
         ) : (
           <View>
-            <Text style={styles.userInfo}>
+            <Typography body1 style={styles.userInfo}>
               Welcome, {user?.name || user?.email}!
-            </Text>
-            <TouchableOpacity
-              style={[styles.button, styles.dangerButton]}
+            </Typography>
+            <Button
+              primary
               onPress={handleLogout}
-              disabled={authLoading}
+              loading={authLoading}
+              fullWidth
             >
-              {authLoading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text style={styles.buttonText}>Logout</Text>
-              )}
-            </TouchableOpacity>
+              Logout
+            </Button>
           </View>
         )}
 
         {authError && (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{authError}</Text>
-            <TouchableOpacity
-              style={styles.clearButton}
+            <Typography body2 style={styles.errorText}>
+              {authError}
+            </Typography>
+            <Button
+              ghost
+              small
               onPress={handleClearAuthError}
             >
-              <Text style={styles.clearButtonText}>✕</Text>
-            </TouchableOpacity>
+              ✕
+            </Button>
           </View>
         )}
       </View>
@@ -162,43 +156,42 @@ const ReduxSagaExampleContent: React.FC = () => {
       {/* User Operations Section */}
       {isAuthenticated && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>👥 User Operations</Text>
+          <Typography h2 style={styles.sectionTitle}>
+            👥 User Operations
+          </Typography>
           
           <View style={styles.buttonRow}>
-            <TouchableOpacity
-              style={[styles.button, styles.secondaryButton]}
+            <Button
+              outline
+              borderRadius='none'
               onPress={handleFetchUsers}
-              disabled={userLoading}
+              loading={userLoading}
             >
-              {userLoading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text style={styles.buttonText}>Fetch Users</Text>
-              )}
-            </TouchableOpacity>
+              Fetch Users
+            </Button>
 
-            <TouchableOpacity
-              style={[styles.button, styles.secondaryButton]}
+            <Button
+              primary
+              borderRadius='none'
               onPress={handleFetchProfile}
-              disabled={userLoading}
+              loading={userLoading}
             >
-              {userLoading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text style={styles.buttonText}>Fetch Profile</Text>
-              )}
-            </TouchableOpacity>
+              Fetch Profile
+            </Button>
           </View>
 
           {userError && (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{userError}</Text>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={handleClearUserError}
-              >
-                <Text style={styles.clearButtonText}>✕</Text>
-              </TouchableOpacity>
+              <Typography body2 style={styles.errorText}>
+                {userError}
+              </Typography>
+                          <Button
+              ghost
+              small
+              onPress={handleClearUserError}
+            >
+              ✕
+            </Button>
             </View>
           )}
         </View>
@@ -207,26 +200,42 @@ const ReduxSagaExampleContent: React.FC = () => {
       {/* Data Display Section */}
       {isAuthenticated && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Data Display</Text>
+          <Typography h2 style={styles.sectionTitle}>
+            📊 Data Display
+          </Typography>
           
           {/* Current User Profile */}
           {currentUser && (
             <View style={styles.dataContainer}>
-              <Text style={styles.dataTitle}>Current User Profile:</Text>
-              <Text style={styles.dataText}>ID: {currentUser.id}</Text>
-              <Text style={styles.dataText}>Name: {currentUser.name}</Text>
-              <Text style={styles.dataText}>Email: {currentUser.email}</Text>
+              <Typography h3 style={styles.dataTitle}>
+                Current User Profile:
+              </Typography>
+              <Typography body2 style={styles.dataText}>
+                ID: {currentUser.id}
+              </Typography>
+              <Typography body2 style={styles.dataText}>
+                Name: {currentUser.name}
+              </Typography>
+              <Typography body2 style={styles.dataText}>
+                Email: {currentUser.email}
+              </Typography>
             </View>
           )}
 
           {/* Users List */}
           {users.length > 0 && (
             <View style={styles.dataContainer}>
-              <Text style={styles.dataTitle}>Users ({users.length}):</Text>
+              <Typography h3 style={styles.dataTitle}>
+                Users ({users.length}):
+              </Typography>
               {users.map((user, index) => (
                 <View key={user.id} style={styles.userItem}>
-                  <Text style={styles.userName}>{user.name}</Text>
-                  <Text style={styles.userEmail}>{user.email}</Text>
+                  <Typography body1 style={styles.userName}>
+                    {user.name}
+                  </Typography>
+                  <Typography caption style={styles.userEmail}>
+                    {user.email}
+                  </Typography>
                 </View>
               ))}
             </View>
@@ -236,14 +245,16 @@ const ReduxSagaExampleContent: React.FC = () => {
 
       {/* Info Section */}
       <View style={styles.infoSection}>
-        <Text style={styles.infoTitle}>ℹ️ How It Works:</Text>
-        <Text style={styles.infoText}>
+        <Typography h2 style={styles.infoTitle}>
+          ℹ️ How It Works:
+        </Typography>
+        <Typography body1 style={styles.infoText}>
           1. **Redux Store** - Manages application state{'\n'}
           2. **Redux Saga** - Handles side effects (API calls){'\n'}
           3. **HTTP Client** - Makes actual API requests{'\n'}
           4. **Actions** - Trigger sagas and update state{'\n'}
           5. **Components** - Display data and dispatch actions
-        </Text>
+        </Typography>
       </View>
     </ScrollView>
   );
@@ -252,146 +263,106 @@ const ReduxSagaExampleContent: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
+    padding: ResponsiveStyleSheet.responsiveSpacing(5),
+    backgroundColor: ResponsiveStyleSheet.getThemeColors().surface,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 10,
-    color: '#333',
+    marginBottom: ResponsiveStyleSheet.responsiveSpacing(2),
+    color: ResponsiveStyleSheet.getThemeColors().text,
   },
   subtitle: {
-    fontSize: 16,
     textAlign: 'center',
-    marginBottom: 30,
-    color: '#666',
+    marginBottom: ResponsiveStyleSheet.responsiveSpacing(6),
+    color: ResponsiveStyleSheet.getThemeColors().textSecondary,
   },
   section: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 10,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: ResponsiveStyleSheet.getThemeColors().surface,
+    padding: ResponsiveStyleSheet.responsiveSpacing(5),
+    borderRadius: ResponsiveStyleSheet.responsiveBorderRadius('lg'),
+    marginBottom: ResponsiveStyleSheet.responsiveSpacing(5),
+    ...ResponsiveStyleSheet.responsiveShadow('base'),
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    color: '#333',
+    marginBottom: ResponsiveStyleSheet.responsiveSpacing(4),
+    color: ResponsiveStyleSheet.getThemeColors().text,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 15,
-    fontSize: 16,
+    borderColor: ResponsiveStyleSheet.getThemeColors().placeholder,
+    borderRadius: ResponsiveStyleSheet.responsiveBorderRadius('md'),
+    padding: ResponsiveStyleSheet.responsiveSpacing(3),
+    marginBottom: ResponsiveStyleSheet.responsiveSpacing(4),
+    fontSize: ResponsiveStyleSheet.typography('base'),
+    backgroundColor: ResponsiveStyleSheet.getThemeColors().surface,
   },
-  button: {
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  primaryButton: {
-    backgroundColor: '#007AFF',
-  },
-  secondaryButton: {
-    backgroundColor: '#34C759',
-  },
-  dangerButton: {
-    backgroundColor: '#FF3B30',
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: ResponsiveStyleSheet.responsiveSpacing(3),
   },
   userInfo: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 15,
+    color: ResponsiveStyleSheet.getThemeColors().text,
+    marginBottom: ResponsiveStyleSheet.responsiveSpacing(4),
     textAlign: 'center',
   },
   errorContainer: {
-    backgroundColor: '#FFE5E5',
-    padding: 10,
-    borderRadius: 6,
+    backgroundColor: ResponsiveStyleSheet.getThemeColors().error + '20', // 20% opacity
+    padding: ResponsiveStyleSheet.responsiveSpacing(2),
+    borderRadius: ResponsiveStyleSheet.responsiveBorderRadius('md'),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    borderLeftWidth: 4,
+    borderLeftColor: ResponsiveStyleSheet.getThemeColors().error,
   },
   errorText: {
-    color: '#D70015',
+    color: ResponsiveStyleSheet.getThemeColors().error,
     flex: 1,
-    marginRight: 10,
+    marginRight: ResponsiveStyleSheet.responsiveSpacing(2),
   },
-  clearButton: {
-    padding: 5,
-  },
-  clearButtonText: {
-    color: '#D70015',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+
   dataContainer: {
-    backgroundColor: '#f8f9fa',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 15,
+    backgroundColor: ResponsiveStyleSheet.getThemeColors().background,
+    padding: ResponsiveStyleSheet.responsiveSpacing(4),
+    borderRadius: ResponsiveStyleSheet.responsiveBorderRadius('md'),
+    marginBottom: ResponsiveStyleSheet.responsiveSpacing(4),
   },
   dataTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
+    marginBottom: ResponsiveStyleSheet.responsiveSpacing(2),
+    color: ResponsiveStyleSheet.getThemeColors().text,
   },
   dataText: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 5,
+    color: ResponsiveStyleSheet.getThemeColors().textSecondary,
+    marginBottom: ResponsiveStyleSheet.responsiveSpacing(1),
   },
   userItem: {
-    padding: 10,
+    padding: ResponsiveStyleSheet.responsiveSpacing(2),
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: ResponsiveStyleSheet.getThemeColors().placeholder,
   },
   userName: {
-    fontSize: 14,
+    color: ResponsiveStyleSheet.getThemeColors().text,
     fontWeight: '600',
-    color: '#333',
   },
   userEmail: {
-    fontSize: 12,
-    color: '#666',
+    color: ResponsiveStyleSheet.getThemeColors().textSecondary,
   },
   infoSection: {
-    backgroundColor: '#e3f2fd',
-    padding: 20,
-    borderRadius: 10,
+    backgroundColor: ResponsiveStyleSheet.getThemeColors().primary + '10', // 10% opacity
+    padding: ResponsiveStyleSheet.responsiveSpacing(5),
+    borderRadius: ResponsiveStyleSheet.responsiveBorderRadius('lg'),
     borderLeftWidth: 4,
-    borderLeftColor: '#2196f3',
+    borderLeftColor: ResponsiveStyleSheet.getThemeColors().primary,
   },
   infoTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#1976d2',
+    marginBottom: ResponsiveStyleSheet.responsiveSpacing(2),
+    color: ResponsiveStyleSheet.getThemeColors().primary,
   },
   infoText: {
-    fontSize: 14,
-    color: '#1976d2',
-    lineHeight: 20,
+    color: ResponsiveStyleSheet.getThemeColors().primary,
+    lineHeight: ResponsiveStyleSheet.lineHeight(16, 1.4),
   },
 });
 

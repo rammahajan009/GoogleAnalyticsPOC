@@ -1,5 +1,28 @@
 import { Dimensions, PixelRatio, Platform } from 'react-native';
 
+// Theme interface for color customization (like React Native Paper)
+export interface ThemeColors {
+  primary: string;
+  accent: string;
+  background: string;
+  surface: string;
+  text: string;
+  textSecondary: string;
+  textDisabled: string;
+  onPrimary: string;
+  onAccent: string;
+  onBackground: string;
+  onSurface: string;
+  error: string;
+  success: string;
+  warning: string;
+  info: string;
+  disabled: string;
+  placeholder: string;
+  backdrop: string;
+  notification: string;
+}
+
 /**
  * Responsive StyleSheet utilities
  * Provides responsive sizing functions that can be used in StyleSheet.create()
@@ -61,6 +84,7 @@ export class ResponsiveStyleSheet {
     xl: 12,
     '2xl': 16,
     '3xl': 24,
+    '4xl': 32,
     full: 9999,
   };
 
@@ -75,78 +99,9 @@ export class ResponsiveStyleSheet {
     '2xl': { shadowOpacity: 0.3, elevation: 8 },
   };
 
-  // Color system
-  public static readonly COLORS = {
-    // Primary colors
-    primary: {
-      50: '#eff6ff',
-      100: '#dbeafe',
-      200: '#bfdbfe',
-      300: '#93c5fd',
-      400: '#60a5fa',
-      500: '#3b82f6',
-      600: '#2563eb',
-      700: '#1d4ed8',
-      800: '#1e40af',
-      900: '#1e3a8a',
-    },
-    // Gray colors
-    gray: {
-      50: '#f9fafb',
-      100: '#f3f4f6',
-      200: '#e5e7eb',
-      300: '#d1d5db',
-      400: '#9ca3af',
-      500: '#6b7280',
-      600: '#4b5563',
-      700: '#374151',
-      800: '#1f2937',
-      900: '#111827',
-    },
-    // Success colors
-    success: {
-      50: '#f0fdf4',
-      100: '#dcfce7',
-      200: '#bbf7d0',
-      300: '#86efac',
-      400: '#4ade80',
-      500: '#22c55e',
-      600: '#16a34a',
-      700: '#15803d',
-      800: '#166534',
-      900: '#14532d',
-    },
-    // Warning colors
-    warning: {
-      50: '#fffbeb',
-      100: '#fef3c7',
-      200: '#fde68a',
-      300: '#fcd34d',
-      400: '#fbbf24',
-      500: '#f59e0b',
-      600: '#d97706',
-      700: '#b45309',
-      800: '#92400e',
-      900: '#78350f',
-    },
-    // Error colors
-    error: {
-      50: '#fef2f2',
-      100: '#fee2e2',
-      200: '#fecaca',
-      300: '#fca5a5',
-      400: '#f87171',
-      500: '#ef4444',
-      600: '#dc2626',
-      700: '#b91c1c',
-      800: '#991b1b',
-      900: '#7f1d1d',
-    },
-    // Common colors
-    white: '#ffffff',
-    black: '#000000',
-    transparent: 'transparent',
-  };
+
+
+
 
   // Breakpoints for responsive design
   public static readonly BREAKPOINTS = {
@@ -781,6 +736,89 @@ export class ResponsiveStyleSheet {
     this.screenWidth = width;
     this.screenHeight = height;
     this.pixelRatio = PixelRatio.get();
+  }
+
+  // Predefined themes (like React Native Paper)
+  public static readonly THEMES = {
+    mp: {
+      primary: '#004FA3',
+      accent: '#002B54',
+      background: '#ffffff',
+      surface: '#ffffff',
+      text: '#3f4048',
+      textSecondary: '#6b7280',
+      textDisabled: '#9ca3af',
+      onPrimary: '#ffffff',
+      onAccent: '#ffffff',
+      onBackground: '#3f4048',
+      onSurface: '#3f4048',
+      error: '#ef4444',
+      success: '#22c55e',
+      warning: '#f59e0b',
+      info: '#007aff',
+      disabled: '#9ca3af',
+      placeholder: '#9ca3af',
+      backdrop: 'rgba(0, 0, 0, 0.5)',
+      notification: '#ef4444',
+    } as ThemeColors,
+    
+    pp: {
+      primary: '#f8fafc',
+      accent: '#007aff',
+      background: '#1a1a1a',
+      surface: '#2d2d2d',
+      text: '#f8fafc',
+      textSecondary: '#cbd5e1',
+      textDisabled: '#64748b',
+      onPrimary: '#1a1a1a',
+      onAccent: '#1a1a1a',
+      onBackground: '#f8fafc',
+      onSurface: '#f8fafc',
+      error: '#f87171',
+      success: '#4ade80',
+      warning: '#fbbf24',
+      info: '#007aff',
+      disabled: '#64748b',
+      placeholder: '#64748b',
+      backdrop: 'rgba(0, 0, 0, 0.7)',
+      notification: '#f87171',
+    } as ThemeColors,
+  };
+
+  // Current theme (defaults to light)
+  private static currentTheme: keyof typeof ResponsiveStyleSheet.THEMES = 'mp';
+
+  /**
+   * Set the current theme
+   * @param theme - Theme name
+   */
+  static setTheme(theme: keyof typeof ResponsiveStyleSheet.THEMES): void {
+    this.currentTheme = theme;
+  }
+
+  /**
+   * Get the current theme name
+   * @returns Current theme name
+   */
+  static getCurrentTheme(): keyof typeof ResponsiveStyleSheet.THEMES {
+    return this.currentTheme;
+  }
+
+  /**
+   * Get colors for the current theme
+   * @returns Current theme colors
+   */
+  static getThemeColors(): ThemeColors {
+    return this.THEMES[this.currentTheme];
+  }
+
+  /**
+   * Get colors for a specific theme
+   * @param theme - Theme name
+   * @returns Theme colors
+   */
+  static getColorsForTheme(theme: keyof typeof ResponsiveStyleSheet.THEMES): ThemeColors {
+    return this.THEMES[theme];
   }
 }
 

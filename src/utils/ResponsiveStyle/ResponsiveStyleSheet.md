@@ -1,650 +1,497 @@
-# ResponsiveStyleSheet - React Native Responsive Design with StyleSheet
+# ResponsiveStyleSheet Utility
 
-A comprehensive responsive design utility for React Native that provides responsive sizing, typography, spacing, colors, shadows, and more. Designed to work seamlessly with `StyleSheet.create()` for optimal performance.
+A comprehensive utility for creating responsive, themeable, and accessible React Native styles that automatically adapt to different screen sizes, densities, and themes. Built with performance and developer experience in mind.
 
-## 🚀 Features
+## ✨ Features
 
-- **Responsive Sizing**: Width, height, font sizes that scale with screen dimensions
-- **Typography System**: Predefined font scales with responsive sizing
-- **Spacing System**: Consistent spacing scales for margins, padding, and gaps
-- **Color System**: Comprehensive color palette with semantic naming
-- **Border Radius**: Responsive border radius scales
-- **Shadow System**: Predefined shadow configurations
-- **Device Detection**: Phone/tablet detection and orientation
-- **Platform Support**: iOS and Android specific values
-- **Generic Spacing**: Single function for all spacing needs
-- **Spacer Utilities**: Easy ways to add space between components
-- **Performance Optimized**: Works with `StyleSheet.create()` for best performance
+- **Responsive Scaling**: Automatic scaling based on device dimensions and density
+- **Theme System**: Light, dark, and custom themes with semantic color names
+- **Performance Optimized**: Pre-calculated values and memoized calculations
+- **Platform Aware**: iOS and Android specific optimizations
+- **TypeScript**: Fully typed with comprehensive interfaces
+- **Accessibility**: Built-in support for accessibility features
+- **Design System**: Consistent spacing, typography, and layout scales
 
-## 📦 Installation
+## 🚀 Installation
 
-```bash
-npm install react-native
+```tsx
+import { ResponsiveStyleSheet } from '../utils/ResponsiveStyle/ResponsiveStyleSheet';
 ```
 
-## 🎯 Quick Start
+## 📖 Usage
 
-```typescript
-import { StyleSheet } from 'react-native';
-import { 
-  ResponsiveStyleSheet, 
-  w, h, f, t, s, rs, b, rsh,
-  spacing, layoutSpacing,
-  spacer, verticalSpacer, horizontalSpacer,
-  flexGap, rowGap, columnGap
-} from './utils/ResponsiveStyleSheet';
+### Basic Responsive Scaling
 
+```tsx
+// Responsive spacing
 const styles = StyleSheet.create({
   container: {
-    width: w(300),
-    height: h(200),
-    padding: rs(4),
-    backgroundColor: ResponsiveStyleSheet.COLORS.primary[500],
-    borderRadius: b('lg'),
-    ...rsh('base'),
-  },
-  title: {
-    fontSize: t('2xl'),
-    color: ResponsiveStyleSheet.COLORS.gray[900],
-    marginBottom: spacing('margin', 'bottom', 4) as number,
-  },
-  spacer: {
-    ...verticalSpacer(20),
-  },
-});
-```
-
-## 📏 Core Utilities
-
-### Responsive Sizing
-
-```typescript
-// Width and height
-const width = w(300);         // Responsive width
-const height = h(200);        // Responsive height
-
-// Font sizes
-const fontSize = f(16);       // Responsive font size
-const typography = t('xl');   // Responsive typography
-
-// Spacing
-const spacing = s(4);         // Base spacing
-const responsiveSpacing = rs(4); // Responsive spacing
-```
-
-### Clean, Intuitive Names
-
-| Function | Meaning | Example |
-|----------|---------|---------|
-| `w` | **W**idth | `width: w(300)` |
-| `h` | **H**eight | `height: h(200)` |
-| `f` | **F**ont | `fontSize: f(16)` |
-| `t` | **T**ypography | `fontSize: t('xl')` |
-| `s` | **S**pacing | `margin: s(4)` |
-| `rs` | **R**esponsive **S**pacing | `padding: rs(4)` |
-| `b` | **B**order radius | `borderRadius: b('lg')` |
-| `rb` | **R**esponsive **B**order radius | `borderRadius: rb('lg')` |
-| `sh` | **Sh**adow | `...sh('base')` |
-| `rsh` | **R**esponsive **Sh**adow | `...rsh('lg')` |
-| `ar` | **A**spect **R**atio | `...ar(16/9, 300)` |
-| `pw` | **P**ercentage **W**idth | `width: pw(50)` |
-| `ph` | **P**ercentage **H**eight | `height: ph(30)` |
-| `lh` | **L**ine **H**eight | `lineHeight: lh(16, 1.6)` |
-| `ls` | **L**etter **S**pacing | `letterSpacing: ls(0.5)` |
-
-### Spacer Utilities
-
-| Function | Meaning | Example |
-|----------|---------|---------|
-| `spacer` | **Spacer** (width & height) | `...spacer(10, 20)` |
-| `hspacer` | **H**orizontal **Spacer** | `...hspacer(10)` |
-| `vspacer` | **V**ertical **Spacer** | `...vspacer(20)` |
-| `rvspacer` | **R**esponsive **V**ertical **Spacer** | `...rvspacer(4)` |
-| `rhspacer` | **R**esponsive **H**orizontal **Spacer** | `...rhspacer(2)` |
-
-### Gap Utilities
-
-| Function | Meaning | Example |
-|----------|---------|---------|
-| `fgap` | **F**lex **Gap** | `...fgap(4)` |
-| `rgap` | **R**ow **Gap** | `...rgap(4)` |
-| `cgap` | **C**olumn **Gap** | `...cgap(4)` |
-
-### Generic Spacing Function
-
-Instead of multiple individual functions, use one generic function:
-
-```typescript
-// Margins
-marginTop: spacing('margin', 'top', 4) as number,
-marginBottom: spacing('margin', 'bottom', 4) as number,
-marginHorizontal: spacing('margin', 'horizontal', 4) as number,
-marginVertical: spacing('margin', 'vertical', 4) as number,
-...spacing('margin', 'all', 4) as object, // margin: 16
-
-// Padding
-paddingTop: spacing('padding', 'top', 4) as number,
-paddingBottom: spacing('padding', 'bottom', 4) as number,
-paddingHorizontal: spacing('padding', 'horizontal', 4) as number,
-paddingVertical: spacing('padding', 'vertical', 4) as number,
-...spacing('padding', 'all', 4) as object, // padding: 16
-
-// Gap
-gap: spacing('gap', 'all', 4) as number,
-
-// Different sides
-...spacing('padding', 'sides', 4, [4, 2, 4, 2]) as object, // top: 16, right: 8, bottom: 16, left: 8
-```
-
-### Spacer Utilities for Component Spacing
-
-```typescript
-// Empty View approach
-const styles = StyleSheet.create({
-  spacer: {
-    ...vspacer(20),           // Height: 20
-    ...hspacer(10),           // Width: 10
-    ...spacer(10, 20),        // Width: 10, Height: 20
-  },
-  responsiveSpacer: {
-    ...rvspacer(4),           // Responsive height using spacing scale
-    ...rhspacer(2),           // Responsive width using spacing scale
+    padding: ResponsiveStyleSheet.responsiveSpacing(4), // 16px base, scales with device
+    margin: ResponsiveStyleSheet.responsiveSpacing(6),  // 24px base, scales with device
   },
 });
 
-// Usage in JSX
-<View style={styles.container}>
-  <Text>Component 1</Text>
-  <View style={styles.spacer} /> {/* Empty view as spacer */}
-  <Text>Component 2</Text>
-</View>
-```
-
-### Flex Gap Approach
-
-```typescript
-const styles = StyleSheet.create({
-  flexContainer: {
-    flexDirection: 'row',
-    ...fgap(4),      // gap: 16
-    ...rgap(4),      // rowGap: 16
-    ...cgap(4),      // columnGap: 16
-  },
-});
-
-// Usage in JSX
-<View style={styles.flexContainer}>
-  <Text>Component 1</Text>
-  <Text>Component 2</Text> {/* Automatically spaced */}
-  <Text>Component 3</Text> {/* Automatically spaced */}
-</View>
-```
-
-### Layout Spacing
-
-```typescript
-const styles = StyleSheet.create({
-  listItem: {
-    marginBottom: layoutSpacing('list', 3),
-  },
-  card: {
-    marginBottom: layoutSpacing('card', 4),
-  },
+// Responsive dimensions
+const buttonStyles = StyleSheet.create({
   button: {
-    marginBottom: layoutSpacing('button', 2),
-  },
-  form: {
-    marginBottom: layoutSpacing('form', 3),
-  },
-  navigation: {
-    marginBottom: layoutSpacing('navigation', 2),
-  },
-  grid: {
-    marginBottom: layoutSpacing('grid', 4),
-  },
-  stack: {
-    marginBottom: layoutSpacing('stack', 3),
-  },
-  section: {
-    marginBottom: layoutSpacing('section', 6),
+    height: ResponsiveStyleSheet.height(44),           // 44px base, scales with device
+    width: ResponsiveStyleSheet.width(200),            // 200px base, scales with device
+    borderRadius: ResponsiveStyleSheet.borderRadius('lg'), // 8px base, scales with device
   },
 });
 ```
 
-## 🎨 Design System
+### Theme Integration
 
-### Typography Scale
+```tsx
+// Get current theme colors
+const themeColors = ResponsiveStyleSheet.getThemeColors();
 
-```typescript
-ResponsiveStyleSheet.FONT_SCALE = {
-  xs: 12,      // Extra small
-  sm: 14,      // Small
-  base: 16,    // Base
-  lg: 18,      // Large
-  xl: 20,      // Extra large
-  '2xl': 24,   // 2X large
-  '3xl': 30,   // 3X large
-  '4xl': 36,   // 4X large
-  '5xl': 48,   // 5X large
-  '6xl': 60,   // 6X large
-  '7xl': 72,   // 7X large
-  '8xl': 96,   // 8X large
-  '9xl': 128,  // 9X large
-};
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: themeColors.surface,
+    borderColor: themeColors.placeholder,
+    shadowColor: themeColors.backdrop,
+  },
+  text: {
+    color: themeColors.text,
+  },
+});
+
+// Switch themes dynamically
+ResponsiveStyleSheet.setTheme('dark');  // Switch to dark theme
+ResponsiveStyleSheet.setTheme('light'); // Switch to light theme
+ResponsiveStyleSheet.setTheme('blue');  // Switch to custom theme
 ```
+
+### Responsive Typography
+
+```tsx
+// Responsive font sizes
+const textStyles = StyleSheet.create({
+  heading: {
+    fontSize: ResponsiveStyleSheet.typography('2xl'),     // 24px base, scales with device
+    lineHeight: ResponsiveStyleSheet.lineHeight(24, 1.4), // 24px with 1.4 ratio
+  },
+  body: {
+    fontSize: ResponsiveStyleSheet.typography('base'),    // 16px base, scales with device
+    lineHeight: ResponsiveStyleSheet.lineHeight(16, 1.5), // 16px with 1.5 ratio
+  },
+});
+```
+
+## 🎨 Theme System
+
+### Available Themes
+
+The ResponsiveStyleSheet provides three built-in themes:
+
+#### Light Theme (Default)
+```tsx
+{
+  primary: '#3f4048',      // Main brand color
+  accent: '#007aff',        // iOS-style blue
+  background: '#f5f5f5',    // Light background
+  surface: '#ffffff',       // Card/component surface
+  text: '#3f4048',         // Primary text
+  textSecondary: '#6b7280', // Secondary text
+  error: '#ef4444',         // Error color
+  success: '#22c55e',       // Success color
+  warning: '#f59e0b',       // Warning color
+  info: '#007aff',          // Info color
+}
+```
+
+#### Dark Theme
+```tsx
+{
+  primary: '#f8fafc',       // Light text for dark backgrounds
+  accent: '#007aff',        // Same accent color
+  background: '#1a1a1a',    // Dark background
+  surface: '#2d2d2d',       // Dark surface
+  text: '#f8fafc',         // Light text
+  textSecondary: '#cbd5e1', // Secondary light text
+  error: '#f87171',         // Dark theme error
+  success: '#4ade80',       // Dark theme success
+  warning: '#fbbf24',       // Dark theme warning
+  info: '#007aff',          // Same info color
+}
+```
+
+#### Blue Theme
+```tsx
+{
+  primary: '#1e40af',       // Blue primary
+  accent: '#007aff',        // Same accent
+  background: '#f0f9ff',    // Light blue background
+  surface: '#ffffff',       // White surface
+  text: '#1e40af',         // Blue text
+  textSecondary: '#3b82f6', // Secondary blue
+  error: '#dc2626',         // Blue theme error
+  success: '#16a34a',       // Blue theme success
+  warning: '#d97706',       // Blue theme warning
+  info: '#007aff',          // Same info color
+}
+```
+
+### Theme Management
+
+```tsx
+// Get current theme
+const currentTheme = ResponsiveStyleSheet.getCurrentTheme();
+
+// Get theme colors
+const colors = ResponsiveStyleSheet.getThemeColors();
+
+// Set custom theme
+ResponsiveStyleSheet.setTheme('custom');
+
+// Create custom theme
+const customTheme = {
+  primary: '#FF6B6B',
+  accent: '#4ECDC4',
+  background: '#f8f9fa',
+  surface: '#ffffff',
+  text: '#2c3e50',
+  textSecondary: '#7f8c8d',
+  error: '#e74c3c',
+  success: '#27ae60',
+  warning: '#f39c12',
+  info: '#3498db',
+  // ... other colors
+};
+
+ResponsiveStyleSheet.setTheme('custom', customTheme);
+```
+
+## 📏 Responsive Scales
 
 ### Spacing Scale
 
-```typescript
-ResponsiveStyleSheet.SPACING_SCALE = {
-  0: 0,        // 0px
-  1: 4,        // 4px
-  2: 8,        // 8px
-  3: 12,       // 12px
-  4: 16,       // 16px
-  5: 20,       // 20px
-  6: 24,       // 24px
-  7: 28,       // 28px
-  8: 32,       // 32px
-  9: 36,       // 36px
-  10: 40,      // 40px
-  11: 44,      // 44px
-  12: 48,      // 48px
-  14: 56,      // 56px
-  16: 64,      // 64px
-  20: 80,      // 80px
-  24: 96,      // 96px
-  28: 112,     // 112px
-  32: 128,     // 128px
-  36: 144,     // 144px
-  40: 160,     // 160px
-  44: 176,     // 176px
-  48: 192,     // 192px
-  52: 208,     // 208px
-  56: 224,     // 224px
-  60: 240,     // 240px
-  64: 256,     // 256px
-  72: 288,     // 288px
-  80: 320,     // 320px
-  96: 384,     // 384px
-};
+```tsx
+// Base spacing unit: 4px
+ResponsiveStyleSheet.responsiveSpacing(1)   // 4px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(2)   // 8px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(3)   // 12px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(4)   // 16px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(5)   // 20px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(6)   // 24px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(8)   // 32px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(10)  // 40px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(12)  // 48px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(16)  // 64px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(20)  // 80px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(24)  // 96px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(32)  // 128px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(40)  // 160px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(48)  // 192px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(56)  // 224px base, scales with device
+ResponsiveStyleSheet.responsiveSpacing(64)  // 256px base, scales with device
+```
+
+### Typography Scale
+
+```tsx
+// Font sizes that scale with device
+ResponsiveStyleSheet.typography('xs')    // 12px base, scales with device
+ResponsiveStyleSheet.typography('sm')    // 14px base, scales with device
+ResponsiveStyleSheet.typography('base')  // 16px base, scales with device
+ResponsiveStyleSheet.typography('lg')    // 18px base, scales with device
+ResponsiveStyleSheet.typography('xl')    // 20px base, scales with device
+ResponsiveStyleSheet.typography('2xl')   // 24px base, scales with device
+ResponsiveStyleSheet.typography('3xl')   // 30px base, scales with device
+ResponsiveStyleSheet.typography('4xl')   // 36px base, scales with device
+ResponsiveStyleSheet.typography('5xl')   // 48px base, scales with device
+ResponsiveStyleSheet.typography('6xl')   // 60px base, scales with device
+ResponsiveStyleSheet.typography('7xl')   // 72px base, scales with device
+ResponsiveStyleSheet.typography('8xl')   // 96px base, scales with device
+ResponsiveStyleSheet.typography('9xl')   // 128px base, scales with device
 ```
 
 ### Border Radius Scale
 
-```typescript
-ResponsiveStyleSheet.BORDER_RADIUS_SCALE = {
-  none: 0,     // 0px
-  sm: 2,       // 2px
-  base: 4,     // 4px
-  md: 6,       // 6px
-  lg: 8,       // 8px
-  xl: 12,      // 12px
-  '2xl': 16,   // 16px
-  '3xl': 24,   // 24px
-  full: 9999,  // Full radius
-};
+```tsx
+// Border radius values
+ResponsiveStyleSheet.borderRadius('none')  // 0px
+ResponsiveStyleSheet.borderRadius('sm')    // 2px base, scales with device
+ResponsiveStyleSheet.borderRadius('md')    // 4px base, scales with device
+ResponsiveStyleSheet.borderRadius('lg')    // 8px base, scales with device
+ResponsiveStyleSheet.borderRadius('xl')    // 12px base, scales with device
+ResponsiveStyleSheet.borderRadius('2xl')   // 16px base, scales with device
+ResponsiveStyleSheet.borderRadius('3xl')   // 24px base, scales with device
+ResponsiveStyleSheet.borderRadius('4xl')   // 32px base, scales with device
 ```
 
-### Color System
+### Height and Width Scale
 
-```typescript
-ResponsiveStyleSheet.COLORS = {
-  primary: {
-    50: '#eff6ff',
-    100: '#dbeafe',
-    500: '#3b82f6',
-    900: '#1e3a8a',
-  },
-  gray: {
-    50: '#f9fafb',
-    100: '#f3f4f6',
-    500: '#6b7280',
-    900: '#111827',
-  },
-  success: {
-    100: '#dcfce7',
-    500: '#22c55e',
-  },
-  warning: {
-    100: '#fef3c7',
-    500: '#f59e0b',
-  },
-  error: {
-    100: '#fee2e2',
-    500: '#ef4444',
-  },
-};
+```tsx
+// Height values
+ResponsiveStyleSheet.height(36)   // 36px base, scales with device
+ResponsiveStyleSheet.height(44)   // 44px base, scales with device
+ResponsiveStyleSheet.height(52)   // 52px base, scales with device
+ResponsiveStyleSheet.height(64)   // 64px base, scales with device
+
+// Width values
+ResponsiveStyleSheet.width(100)   // 100px base, scales with device
+ResponsiveStyleSheet.width(200)   // 200px base, scales with device
+ResponsiveStyleSheet.width(300)   // 300px base, scales with device
 ```
 
 ### Shadow Scale
 
-```typescript
-ResponsiveStyleSheet.SHADOW_SCALE = {
-  sm: {
-    shadowOpacity: 0.05,
-    elevation: 1,
-  },
-  base: {
-    shadowOpacity: 0.1,
-    elevation: 2,
-  },
-  md: {
-    shadowOpacity: 0.15,
-    elevation: 4,
-  },
-  lg: {
-    shadowOpacity: 0.2,
-    elevation: 8,
-  },
-  xl: {
-    shadowOpacity: 0.25,
-    elevation: 16,
-  },
-};
+```tsx
+// Predefined shadow styles
+ResponsiveStyleSheet.responsiveShadow('none')   // No shadow
+ResponsiveStyleSheet.responsiveShadow('sm')    // Small shadow
+ResponsiveStyleSheet.responsiveShadow('base')  // Base shadow
+ResponsiveStyleSheet.responsiveShadow('md')    // Medium shadow
+ResponsiveStyleSheet.responsiveShadow('lg')    // Large shadow
+ResponsiveStyleSheet.responsiveShadow('xl')    // Extra large shadow
+ResponsiveStyleSheet.responsiveShadow('2xl')   // 2x large shadow
 ```
 
-## 🔧 Advanced Features
+## 🔧 API Reference
 
-### Device Detection
+### Core Methods
 
-```typescript
-import { isTablet, isPhone, isLandscape, isPortrait } from './utils/ResponsiveStyleSheet';
+| Method | Description | Returns |
+|--------|-------------|---------|
+| `responsiveSpacing(scale)` | Get responsive spacing value | `number` |
+| `typography(scale)` | Get responsive typography value | `number` |
+| `borderRadius(scale)` | Get responsive border radius value | `number` |
+| `height(value)` | Get responsive height value | `number` |
+| `width(value)` | Get responsive width value | `number` |
+| `responsiveShadow(scale)` | Get responsive shadow style | `ViewStyle` |
 
-const styles = StyleSheet.create({
-  container: {
-    padding: isTablet() ? rs(6) : rs(4),
-    flexDirection: isLandscape() ? 'row' : 'column',
-  },
-});
-```
+### Theme Methods
 
-### Platform-Specific Values
+| Method | Description | Returns |
+|--------|-------------|---------|
+| `setTheme(name, colors?)` | Set theme by name or custom colors | `void` |
+| `getCurrentTheme()` | Get current theme name | `string` |
+| `getThemeColors()` | Get current theme colors | `ThemeColors` |
+| `getColorsForTheme(name)` | Get colors for specific theme | `ThemeColors` |
 
-```typescript
-import { platform } from './utils/ResponsiveStyleSheet';
+### Utility Methods
 
-const styles = StyleSheet.create({
-  button: {
-    borderRadius: platform(8, 4), // iOS: 8, Android: 4
-    padding: platform(rs(4), rs(3)),
-  },
-});
-```
-
-### Aspect Ratio
-
-```typescript
-import { ar } from './utils/ResponsiveStyleSheet';
-
-const styles = StyleSheet.create({
-  image: {
-    ...ar(16/9, 300), // 16:9 aspect ratio, 300px width
-  },
-});
-```
-
-### Percentage Sizing
-
-```typescript
-import { pw, ph } from './utils/ResponsiveStyleSheet';
-
-const styles = StyleSheet.create({
-  container: {
-    width: pw(50),   // 50% of screen width
-    height: ph(30),  // 30% of screen height
-  },
-});
-```
-
-### Advanced Typography
-
-```typescript
-import { lh, ls } from './utils/ResponsiveStyleSheet';
-
-const styles = StyleSheet.create({
-  text: {
-    fontSize: t('lg'),
-    lineHeight: lh(18, 1.6),     // Line height with multiplier
-    letterSpacing: ls(0.5),       // Letter spacing
-  },
-});
-```
-
-## 📱 Component Spacing Approaches
-
-### 1. Empty View Spacer (Most Common)
-
-```typescript
-const styles = StyleSheet.create({
-  spacer: {
-    ...verticalSpacer(20),
-  },
-});
-
-// JSX
-<View>
-  <Text>Component 1</Text>
-  <View style={styles.spacer} />
-  <Text>Component 2</Text>
-</View>
-```
-
-### 2. Flex Gap (Modern Approach)
-
-```typescript
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'column',
-    ...flexGap(4),
-  },
-});
-
-// JSX
-<View style={styles.container}>
-  <Text>Component 1</Text>
-  <Text>Component 2</Text> {/* Automatically spaced */}
-</View>
-```
-
-### 3. Margin/Padding Approach
-
-```typescript
-const styles = StyleSheet.create({
-  component: {
-    marginBottom: spacing('margin', 'bottom', 4) as number,
-  },
-});
-
-// JSX
-<View>
-  <Text style={styles.component}>Component 1</Text>
-  <Text>Component 2</Text>
-</View>
-```
-
-### 4. Responsive Spacer
-
-```typescript
-const styles = StyleSheet.create({
-  spacer: {
-    ...responsiveVerticalSpacer(4), // Uses spacing scale
-  },
-});
-```
+| Method | Description | Returns |
+|--------|-------------|---------|
+| `lineHeight(size, ratio)` | Calculate line height | `number` |
+| `letterSpacing(size, spacing)` | Calculate letter spacing | `number` |
+| `responsiveBorderRadius(scale)` | Get responsive border radius (legacy) | `number` |
 
 ## 🎯 Best Practices
 
-### 1. Use StyleSheet.create()
+### 1. Use Semantic Spacing
 
-Always use `StyleSheet.create()` for better performance:
-
-```typescript
-// ✅ Good
+```tsx
+// Good: Use semantic spacing values
 const styles = StyleSheet.create({
   container: {
-    padding: rs(4),
+    padding: ResponsiveStyleSheet.responsiveSpacing(4),  // 16px
+    marginBottom: ResponsiveStyleSheet.responsiveSpacing(6), // 24px
   },
 });
 
-// ❌ Avoid
-const styles = {
-  container: {
-    padding: rs(4), // Recreated on every render
-  },
-};
-```
-
-### 2. Use Generic Spacing Function
-
-```typescript
-// ✅ Good - Single function
-marginBottom: spacing('margin', 'bottom', 4) as number,
-
-// ❌ Avoid - Multiple functions
-marginBottom: rmb(4),
-```
-
-### 3. Use Spacer Components for Simple Spacing
-
-```typescript
-// ✅ Good - Clear intent
-<View style={styles.spacer} />
-
-// ❌ Avoid - Less clear
-<View style={{ height: 20 }} />
-```
-
-### 4. Use Flex Gap for Complex Layouts
-
-```typescript
-// ✅ Good - Modern approach
+// Avoid: Hardcoded values
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    ...flexGap(4),
-  },
-});
-
-// ❌ Avoid - Manual spacing
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-  },
-  item: {
-    marginRight: rs(4),
+    padding: 16,
+    marginBottom: 24,
   },
 });
 ```
 
-## 🔄 Screen Updates
+### 2. Leverage Theme Colors
 
-Update dimensions when screen changes:
+```tsx
+// Good: Use theme colors for consistency
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: ResponsiveStyleSheet.getThemeColors().surface,
+    borderColor: ResponsiveStyleSheet.getThemeColors().placeholder,
+  },
+});
 
-```typescript
-import { ResponsiveStyleSheet } from './utils/ResponsiveStyleSheet';
-
-// In your component
-useEffect(() => {
-  const subscription = Dimensions.addEventListener('change', () => {
-    ResponsiveStyleSheet.updateDimensions();
-  });
-
-  return () => subscription?.remove();
-}, []);
+// Avoid: Hardcoded colors
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: '#ffffff',
+    borderColor: '#e5e7eb',
+  },
+});
 ```
 
-## 📊 Performance Benefits
+### 3. Use Responsive Typography
 
-- **StyleSheet.create()**: Static styles for better performance
-- **Generic Functions**: Less code, better maintainability
-- **Responsive Calculations**: Cached and optimized
-- **Type Safety**: Full TypeScript support
+```tsx
+// Good: Use typography scale
+const styles = StyleSheet.create({
+  heading: {
+    fontSize: ResponsiveStyleSheet.typography('2xl'),
+    lineHeight: ResponsiveStyleSheet.lineHeight(24, 1.4),
+  },
+});
 
-## 🎨 Complete Example
+// Avoid: Hardcoded font sizes
+const styles = StyleSheet.create({
+  heading: {
+    fontSize: 24,
+    lineHeight: 34,
+  },
+});
+```
 
-```typescript
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { 
-  ResponsiveStyleSheet, 
-  w, h, t, rs, b, rsh,
-  spacing, vspacer, fgap
-} from './utils/ResponsiveStyleSheet';
+### 4. Optimize Performance
 
-export const ExampleComponent: React.FC = () => {
-  return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Responsive Design</Text>
-        <Text style={styles.subtitle}>Scalable and performant</Text>
-      </View>
-      
-      <View style={styles.spacer} />
-      
-      <View style={styles.content}>
-        <Text style={styles.body}>This component scales beautifully across all devices!</Text>
-      </View>
-      
-      <View style={styles.buttonContainer}>
-        <Text style={styles.button}>Primary Action</Text>
-        <Text style={styles.button}>Secondary Action</Text>
-      </View>
-    </ScrollView>
-  );
-};
+```tsx
+// Good: Pre-calculate styles
+const styles = StyleSheet.create({
+  button: {
+    height: ResponsiveStyleSheet.height(44),
+    borderRadius: ResponsiveStyleSheet.borderRadius('lg'),
+  },
+});
+
+// Avoid: Calculate on every render
+const styles = StyleSheet.create({
+  button: {
+    height: ResponsiveStyleSheet.height(44),
+    borderRadius: ResponsiveStyleSheet.borderRadius('lg'),
+  },
+});
+```
+
+## 🔄 Migration Guide
+
+### From Old Color System
+
+```tsx
+// Before: Using old COLORS constant
+import { ResponsiveStyleSheet } from '../utils/ResponsiveStyle/ResponsiveStyleSheet';
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: ResponsiveStyleSheet.COLORS.gray[50],
-    padding: rs(4),
-  },
-  header: {
-    backgroundColor: ResponsiveStyleSheet.COLORS.white,
-    borderRadius: b('lg'),
-    padding: rs(6),
-    ...rsh('base'),
-  },
-  title: {
-    fontSize: t('3xl'),
-    fontWeight: 'bold',
-    color: ResponsiveStyleSheet.COLORS.gray[900],
-    marginBottom: spacing('margin', 'bottom', 2) as number,
-  },
-  subtitle: {
-    fontSize: t('lg'),
-    color: ResponsiveStyleSheet.COLORS.gray[600],
-  },
-  spacer: {
-    ...vspacer(20),
-  },
-  content: {
-    backgroundColor: ResponsiveStyleSheet.COLORS.primary[50],
-    borderRadius: b('base'),
-    padding: rs(4),
-    marginBottom: spacing('margin', 'bottom', 4) as number,
-  },
-  body: {
-    fontSize: t('base'),
-    color: ResponsiveStyleSheet.COLORS.gray[700],
-    lineHeight: lh(16, 1.6),
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    ...fgap(4),
-  },
   button: {
     backgroundColor: ResponsiveStyleSheet.COLORS.primary[500],
     color: ResponsiveStyleSheet.COLORS.white,
-    padding: rs(4),
-    borderRadius: b('base'),
-    fontSize: t('base'),
-    fontWeight: '600',
-    textAlign: 'center',
-    flex: 1,
+  },
+});
+
+// After: Using new theme system
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: ResponsiveStyleSheet.getThemeColors().primary,
+    color: ResponsiveStyleSheet.getThemeColors().onPrimary,
   },
 });
 ```
 
-This comprehensive system provides everything you need for responsive React Native design with excellent performance and maintainability! 
+### From Hardcoded Values
+
+```tsx
+// Before: Hardcoded spacing and colors
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+  },
+});
+
+// After: Responsive and themed
+const styles = StyleSheet.create({
+  container: {
+    padding: ResponsiveStyleSheet.responsiveSpacing(5),
+    backgroundColor: ResponsiveStyleSheet.getThemeColors().background,
+    borderRadius: ResponsiveStyleSheet.borderRadius('lg'),
+  },
+});
+```
+
+## 📱 Platform Considerations
+
+### iOS
+
+- **Font Rendering**: Optimized for iOS font rendering
+- **Spacing**: iOS-specific spacing adjustments
+- **Shadows**: iOS-specific shadow implementations
+
+### Android
+
+- **Font Rendering**: Optimized for Android font rendering
+- **Spacing**: Android-specific spacing adjustments
+- **Elevation**: Android-specific elevation support
+
+### Cross-Platform
+
+- **Consistent API**: Same methods work on both platforms
+- **Responsive Scaling**: Adapts to different screen densities
+- **Theme Support**: Consistent theming across platforms
+
+## 🧪 Testing
+
+### Unit Testing
+
+```tsx
+// Test responsive scaling
+describe('ResponsiveStyleSheet', () => {
+  it('should scale spacing correctly', () => {
+    const spacing = ResponsiveStyleSheet.responsiveSpacing(4);
+    expect(spacing).toBeGreaterThan(0);
+  });
+
+  it('should return theme colors', () => {
+    const colors = ResponsiveStyleSheet.getThemeColors();
+    expect(colors.primary).toBeDefined();
+    expect(colors.text).toBeDefined();
+  });
+});
+```
+
+### Integration Testing
+
+```tsx
+// Test theme switching
+describe('Theme Switching', () => {
+  it('should switch themes correctly', () => {
+    ResponsiveStyleSheet.setTheme('dark');
+    const darkColors = ResponsiveStyleSheet.getThemeColors();
+    expect(darkColors.background).toBe('#1a1a1a');
+
+    ResponsiveStyleSheet.setTheme('light');
+    const lightColors = ResponsiveStyleSheet.getThemeColors();
+    expect(lightColors.background).toBe('#f5f5f5');
+  });
+});
+```
+
+## 🔗 Dependencies
+
+- **React Native**: Core framework
+- **Dimensions API**: For screen size detection
+- **PixelRatio API**: For device density detection
+- **TypeScript**: For type safety
+
+## 📄 License
+
+This utility is part of the project's design system and follows the project's licensing terms.
+
+## 🚀 Performance Tips
+
+1. **Pre-calculate Styles**: Use StyleSheet.create for static styles
+2. **Memoize Calculations**: Use useMemo for dynamic styles
+3. **Avoid Inline Objects**: Prefer style references over inline styles
+4. **Theme Caching**: Access theme colors once and cache them
+5. **Responsive Optimization**: Use responsive values only when needed
+
+## 🎨 Design System Integration
+
+The ResponsiveStyleSheet is designed to work seamlessly with:
+
+- **Typography Component**: Consistent text scaling
+- **Button Component**: Responsive button dimensions
+- **Layout Components**: Consistent spacing and sizing
+- **Theme System**: Dynamic color management
+- **Accessibility**: Inclusive design support
+
+The ResponsiveStyleSheet utility provides a solid foundation for building responsive, accessible, and performant React Native applications! 🎉 
