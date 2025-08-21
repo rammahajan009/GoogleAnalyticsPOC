@@ -9,3 +9,6 @@ export type { ButtonProps } from './Button/Button';
 // ResponsiveStyleSheet Utility
 export { ResponsiveStyleSheet } from '../utils/ResponsiveStyle/ResponsiveStyleSheet';
 export type { ThemeColors } from '../utils/ResponsiveStyle/ResponsiveStyleSheet';
+
+// Storage Example Component
+export { default as StorageExample } from './StorageExample';

@@ -5562,6 +5562,11 @@ react-native-config@^1.5.6:
   resolved "https://registry.yarnpkg.com/react-native-config/-/react-native-config-1.5.6.tgz#78e250d769be74ac0eff0eccf99ef658f33dabbf"
   integrity sha512-UB3LEco0FGGbbGvS+DfH2VmGKiP/y5C2MkmfBmfsIaxHSbM1KOTMKYG7YRf6xFhZbJ/01BedHG7SIny5i7N9BQ==
 
+react-native-keychain@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-keychain/-/react-native-keychain-10.0.0.tgz#1de6f54d27b2376deaac4d51883c066f53b7be7b"
+  integrity sha512-YzPKSAnSzGEJ12IK6CctNLU79T1W15WDrElRQ+1/FsOazGX9ucFPTQwgYe8Dy8jiSEDJKM4wkVa3g4lD2Z+Pnw==
+
 react-native-safe-area-context@^5.5.2:
   version "5.6.0"
   resolved "https://registry.yarnpkg.com/react-native-safe-area-context/-/react-native-safe-area-context-5.6.0.tgz#0ab284c291bb57d59330abf7dfe65156d6340e78"

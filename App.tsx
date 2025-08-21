@@ -14,6 +14,7 @@ import { getProjectIds, getProjectConfig } from './src/config/AnalyticsConfig';
 import StickyScrollView from './src/components/StickyScrollView';
 import Provider from './src/store/Provider';
 import ReduxSagaExample from './src/components/ReduxSagaExample';
+import StorageExample from './src/components/StorageExample';
 
 
 
@@ -152,7 +153,8 @@ function App() {
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
           <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
           {/* <NewAppScreen templateFileName="App.tsx" /> */}
-          <ReduxSagaExample />
+          {/* <ReduxSagaExample /> */}
+          <StorageExample />
         </SafeAreaView>
 
 
