@@ -330,6 +330,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
     alignSelf: 'stretch',
+    backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderColor: '#9B9B9B',
   },
   buttonContentWrapper: {
     width: '100%',
