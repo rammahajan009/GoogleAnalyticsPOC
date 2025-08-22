@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
     alignSelf: 'stretch',
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderTopWidth: 1,
     borderColor: '#9B9B9B',
   },
