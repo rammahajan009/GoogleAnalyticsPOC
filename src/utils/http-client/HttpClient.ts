@@ -372,6 +372,7 @@ class HttpClient {
   clearTokens(): void {
     this.authToken = null;
     this.refreshToken = null;
+    this.csrfToken = null;
   }
 
   /**
