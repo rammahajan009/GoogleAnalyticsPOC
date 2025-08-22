@@ -5,6 +5,8 @@ A robust, Axios-based HTTP client utility for React Native projects with built-i
 ## 🚀 Features
 
 - **🔐 Authentication**: Bearer token support with automatic header injection
+- **🔄 Refresh Token**: Automatic token refresh on 401 errors with request queuing
+- **🛡️ CSRF Protection**: CSRF token support with automatic refresh on 403/419 errors
 - **🔄 Error Handling**: Comprehensive error formatting and classification
 - **📱 React Native Ready**: Optimized for mobile development
 - **🎯 TypeScript**: Full TypeScript support with proper type definitions
@@ -36,6 +38,8 @@ src/utils/http-client/
 # .env file
 API_BASE_URL=https://api.example.com
 HTTP_TIMEOUT=30000
+REFRESH_TOKEN_ENDPOINT=/auth/refresh
+CSRF_TOKEN_ENDPOINT=/csrf-token
 ```
 
 ### Configuration File
@@ -45,7 +49,62 @@ HTTP_TIMEOUT=30000
 export const HTTP_CLIENT_CONFIG: HttpClientConfig = {
   baseURL: API_BASE_URL,
   timeout: parseInt(process.env.HTTP_TIMEOUT || '30000', 10),
+  refreshTokenEndpoint: REFRESH_TOKEN_ENDPOINT,
 };
+```
+
+### Refresh Token Configuration
+
+```typescript
+interface RefreshTokenResponse {
+  access_token: string;
+  refresh_token?: string;  // Optional new refresh token
+  expires_in?: number;     // Optional token expiration
+}
+```
+
+The refresh token endpoint should accept a POST request with the refresh token and return a new access token:
+
+```typescript
+interface RefreshTokenResponse {
+  access_token: string;
+  refresh_token?: string;  // Optional new refresh token
+  expires_in?: number;     // Optional token expiration
+}
+```
+
+The CSRF token endpoint should accept a POST request and return a new CSRF token:
+
+```typescript
+interface CsrfTokenResponse {
+  csrf_token: string;
+  expires_in?: number;     // Optional token expiration
+}
+```
+
+### Request Configuration
+
+```typescript
+interface RequestConfig extends AxiosRequestConfig {
+  skipAuthToken?: boolean;    // Skip adding Authorization header
+  skipRefreshToken?: boolean; // Skip automatic token refresh on 401
+  skipCsrfToken?: boolean;    // Skip adding X-CSRF-Token header
+}
+
+// Skip auth token for public endpoints
+const response = await httpClient.get('/public-endpoint', {
+  skipAuthToken: true
+});
+
+// Skip refresh token for logout requests
+const response = await httpClient.post('/auth/logout', data, {
+  skipRefreshToken: true
+});
+
+// Skip CSRF token for specific POST requests (if needed)
+const response = await httpClient.post('/some-endpoint', data, {
+  skipCsrfToken: true
+});
 ```
 
 ## 📖 Basic Usage
@@ -108,9 +167,81 @@ const response = await httpClient.get('/protected-route', 'your-bearer-token');
 const response = await httpClient.get('/public-route');
 ```
 
+### Refresh Token Support
+
+```typescript
+// Set both access and refresh tokens
+httpClient.setAuthTokens('access_token_here', 'refresh_token_here');
+
+// Or set them separately
+httpClient.setAuthToken('access_token_here');
+httpClient.setRefreshToken('refresh_token_here');
+
+// Get tokens
+const accessToken = httpClient.getAuthToken();
+const refreshToken = httpClient.getRefreshToken();
+
+// Clear all tokens
+httpClient.clearTokens();
+```
+
+### CSRF Token Support
+
+```typescript
+// Set CSRF token
+httpClient.setCsrfToken('csrf_token_here');
+
+// Get CSRF token
+const csrfToken = httpClient.getCsrfToken();
+
+// Clear all tokens including CSRF
+httpClient.clearAllTokens();
+```
+
 ### Automatic Token Injection
 
 The client automatically adds the `Authorization: Bearer {token}` header when a token is provided.
+
+The client automatically adds the `X-CSRF-Token: {token}` header when a CSRF token is provided, but only for state-changing methods (POST, PUT, PATCH, DELETE). GET requests do not include CSRF tokens as they are considered safe operations.
+
+### Automatic Token Refresh
+
+When a request receives a 401 response, the client automatically:
+1. Attempts to refresh the token using the configured endpoint
+2. Queues failed requests during refresh
+3. Retries failed requests with the new token
+4. Notifies the app of token refresh success/failure
+
+When a request receives a 403 or 419 response (CSRF token expired), the client automatically:
+1. Attempts to refresh the CSRF token using the configured endpoint
+2. Queues failed requests during refresh
+3. Retries failed requests with the new CSRF token
+4. Notifies the app of CSRF token refresh success/failure
+
+```typescript
+// Configure token refresh callbacks
+const httpClient = new HttpClient({
+  baseURL: 'https://api.example.com',
+  refreshTokenEndpoint: '/auth/refresh',
+  csrfTokenEndpoint: '/csrf-token',
+  onTokenRefresh: (newToken) => {
+    // Update stored token
+    storage.setItem('accessToken', newToken);
+  },
+  onTokenRefreshFailed: () => {
+    // Redirect to login
+    navigation.navigate('Login');
+  },
+  onCsrfTokenRefresh: (newToken) => {
+    // Update stored CSRF token
+    storage.setItem('csrfToken', newToken);
+  },
+  onCsrfTokenRefreshFailed: () => {
+    // Handle CSRF refresh failure
+    console.warn('CSRF token refresh failed');
+  }
+});
+```
 
 ## 🚨 Error Handling
 

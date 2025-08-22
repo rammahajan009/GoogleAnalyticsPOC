@@ -11,6 +11,7 @@ export interface User {
 export interface AuthState {
   user: User | null;
   token: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -20,6 +21,7 @@ export interface AuthState {
 const initialState: AuthState = {
   user: null,
   token: null,
+  refreshToken: null,
   isAuthenticated: false,
   isLoading: false,
   error: null,
@@ -35,10 +37,11 @@ const authSlice = createSlice({
       state.isLoading = true;
       state.error = null;
     },
-    loginSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
+    loginSuccess: (state, action: PayloadAction<{ user: User; token: string; refreshToken: string }>) => {
       state.isLoading = false;
       state.user = action.payload.user;
       state.token = action.payload.token;
+      state.refreshToken = action.payload.refreshToken;
       state.isAuthenticated = true;
       state.error = null;
     },
@@ -55,6 +58,7 @@ const authSlice = createSlice({
       state.isLoading = false;
       state.user = null;
       state.token = null;
+      state.refreshToken = null;
       state.isAuthenticated = false;
       state.error = null;
     },
@@ -71,6 +75,18 @@ const authSlice = createSlice({
     // Set auth token (for persistence)
     setAuthToken: (state, action: PayloadAction<string>) => {
       state.token = action.payload;
+      state.isAuthenticated = true;
+    },
+
+    // Set refresh token
+    setRefreshToken: (state, action: PayloadAction<string>) => {
+      state.refreshToken = action.payload;
+    },
+
+    // Set both tokens
+    setAuthTokens: (state, action: PayloadAction<{ token: string; refreshToken: string }>) => {
+      state.token = action.payload.token;
+      state.refreshToken = action.payload.refreshToken;
       state.isAuthenticated = true;
     },
 
@@ -92,6 +108,8 @@ export const {
   logoutFailure,
   clearError,
   setAuthToken,
+  setRefreshToken,
+  setAuthTokens,
   setUser,
 } = authSlice.actions;
 

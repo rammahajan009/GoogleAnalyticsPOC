@@ -23,6 +23,7 @@ interface LoginResponse {
     avatar?: string;
   };
   token: string;
+  refreshToken: string;
 }
 
 // Login saga
@@ -48,14 +49,16 @@ function* loginSaga(action: ReturnType<typeof loginRequest>): Generator<any, voi
 
     // Generate a real token based on the response
     const realToken = `token_${response.id}_${Date.now()}`;
+    const realRefreshToken = `refresh_${response.id}_${Date.now()}`;
 
-    // Set auth token in HTTP client for future requests
-    ApiService.setAuthToken(realToken);
+    // Set auth tokens in HTTP client for future requests
+    ApiService.setAuthTokens(realToken, realRefreshToken);
 
     // Dispatch success action
     yield put(loginSuccess({
       user: realUser,
       token: realToken,
+      refreshToken: realRefreshToken,
     }));
 
   } catch (error: any) {
@@ -89,15 +92,15 @@ function* logoutSaga(): Generator<any, void, any> {
     // Make logout API call - using JSONPlaceholder real API
     yield call(ApiService.post, '/posts', { action: 'logout', timestamp: Date.now() });
     
-    // Clear auth token from HTTP client
-    ApiService.setAuthToken(null);
+    // Clear all auth tokens from HTTP client
+    ApiService.clearTokens();
     
     // Dispatch success action
     yield put(logoutSuccess());
     
   } catch (error: any) {
     // Even if logout API fails, clear local state
-    ApiService.setAuthToken(null);
+    ApiService.clearTokens();
     yield put(logoutSuccess());
   }
 }
