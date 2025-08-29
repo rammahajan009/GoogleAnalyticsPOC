@@ -131,6 +131,12 @@ const newUser = await httpClient.post('/users', {
   email: 'john@example.com'
 });
 
+// POST request with URL-encoded data (for legacy APIs)
+const loginResponse = await httpClient.post('/auth/login', {
+  username: 'john',
+  password: 'password123'
+}, { contentType: 'urlencoded' });
+
 // PUT request with authentication
 const updatedUser = await httpClient.put('/users/1', {
   name: 'Jane Doe'
@@ -460,7 +466,6 @@ it('should handle network errors', async () => {
   }
 });
 ```
-
 ## 🚀 Performance Tips
 
 1. **Singleton Pattern**: The client is already a singleton, no need to create new instances
@@ -526,3 +531,4 @@ This utility is part of your project and follows the same license terms.
 **Happy coding! 🚀**
 
 For questions or issues, check the error logs and debug information first.
+

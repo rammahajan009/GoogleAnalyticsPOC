@@ -23,6 +23,7 @@ export interface RequestConfig extends AxiosRequestConfig {
   skipAuthToken?: boolean;
   skipRefreshToken?: boolean;
   skipCsrfToken?: boolean;
+  contentType?: 'json' | 'urlencoded' | 'form-data' | 'multipart';
 }
 
 export interface ApiResponse<T = any> {
@@ -456,13 +457,39 @@ class HttpClient {
    */
   private async request<T = any>(config: RequestConfig): Promise<ApiResponse<T>> {
     try {
+      // Handle content type and data conversion
+      const { contentType = 'json', ...requestConfig } = config;
+      let finalData = requestConfig.data;
+      let finalHeaders: Record<string, string> = { ...(requestConfig.headers as Record<string, string>) };
+
+      // Set content type header and convert data if needed
+      if (contentType === 'urlencoded' && finalData && typeof finalData === 'object') {
+        finalHeaders['Content-Type'] = 'application/x-www-form-urlencoded';
+        // Convert object to URL-encoded string
+        const params = new URLSearchParams();
+        Object.keys(finalData).forEach(key => {
+          if (finalData[key] !== undefined && finalData[key] !== null) {
+            params.append(key, finalData[key]);
+          }
+        });
+        finalData = params.toString();
+      } else if (contentType === 'form-data' || contentType === 'multipart') {
+        finalHeaders['Content-Type'] = 'multipart/form-data';
+        // For FormData, let axios handle it automatically
+      } else {
+        // Default JSON content type
+        finalHeaders['Content-Type'] = 'application/json';
+      }
+
       // Add request timeout configuration
-      const requestConfig = {
-        ...config,
-        timeout: config.timeout || this.config.timeout,
+      const finalRequestConfig = {
+        ...requestConfig,
+        data: finalData,
+        headers: finalHeaders,
+        timeout: requestConfig.timeout || this.config.timeout,
       };
 
-      const response: AxiosResponse<T> = await this.axiosInstance.request(requestConfig);
+      const response: AxiosResponse<T> = await this.axiosInstance.request(finalRequestConfig);
       
       return {
         data: response.data,
