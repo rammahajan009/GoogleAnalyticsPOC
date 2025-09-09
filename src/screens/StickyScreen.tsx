@@ -65,8 +65,8 @@ const StickyScreen: React.FC<StickyScreenProps> = ({ onNavigateToAnalytics }) =>
                 ref={overviewRef}
                 style={[styles.contentSection, { borderBottomColor: colors.disabled }]}
                 onLayout={(event) => {
-                  const { y } = event.nativeEvent.layout;
-                  stickyScrollViewRef.current?.registerSection('overview', y);
+                  const { y, height } = event.nativeEvent.layout;
+                  stickyScrollViewRef.current?.registerSection('overview', y, height);
                 }}
               >
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>Overview</Text>
@@ -88,8 +88,8 @@ const StickyScreen: React.FC<StickyScreenProps> = ({ onNavigateToAnalytics }) =>
                 ref={featuresRef}
                 style={[styles.contentSection, { borderBottomColor: colors.disabled }]}
                 onLayout={(event) => {
-                  const { y } = event.nativeEvent.layout;
-                  stickyScrollViewRef.current?.registerSection('features', y);
+                  const { y, height } = event.nativeEvent.layout;
+                  stickyScrollViewRef.current?.registerSection('features', y, height);
                 }}
               >
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>Features</Text>
@@ -113,8 +113,8 @@ const StickyScreen: React.FC<StickyScreenProps> = ({ onNavigateToAnalytics }) =>
                 ref={detailsRef}
                 style={[styles.contentSection, { borderBottomColor: colors.disabled }]}
                 onLayout={(event) => {
-                  const { y } = event.nativeEvent.layout;
-                  stickyScrollViewRef.current?.registerSection('details', y);
+                  const { y, height } = event.nativeEvent.layout;
+                  stickyScrollViewRef.current?.registerSection('details', y, height);
                 }}
               >
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>Technical Details</Text>

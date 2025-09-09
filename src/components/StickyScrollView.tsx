@@ -12,7 +12,8 @@ interface StickyScrollViewRef {
   scrollToTop: (animated?: boolean) => void;
   scrollToBottom: (animated?: boolean) => void;
   scrollToSection: (sectionName: string, animated?: boolean) => void;
-  registerSection: (sectionName: string, yPosition: number) => void;
+  registerSection: (sectionName: string, yPosition: number, height?: number) => void;
+  registerFooterSection: (sectionName: string, yPosition: number, height?: number) => void;
 }
 
 interface StickyScrollViewProps {
@@ -39,7 +40,8 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
   const [isButtonStuck, setIsButtonStuck] = useState(false);
   const [cachedButtonHeight, setCachedButtonHeight] = useState(0);
   const [cachedButtonCenterY, setCachedButtonCenterY] = useState(0);
-  const [sectionPositions, setSectionPositions] = useState<Record<string, number>>({});
+  const [sectionPositions, setSectionPositions] = useState<Record<string, { y: number; height: number; isFooter?: boolean }>>({});
+  const [rawSections, setRawSections] = useState<Record<string, { y: number; isFooter?: boolean }>>({});
   const [isProgrammaticScroll, setIsProgrammaticScroll] = useState(false);
   const [tabsHeight, setTabsHeight] = useState(0);
   const buttonRef = useRef<View>(null);
@@ -52,29 +54,73 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
 
   const screenHeight = Dimensions.get('window').height;
 
+  // Function to calculate section heights dynamically
+  const calculateSectionHeights = useCallback((sections: Record<string, { y: number; isFooter?: boolean }>) => {
+    const sortedSections = Object.entries(sections).sort(([, a], [, b]) => a.y - b.y);
+    
+    const updatedSections: Record<string, { y: number; height: number; isFooter?: boolean }> = {};
+    
+    for (let i = 0; i < sortedSections.length; i++) {
+      const [name, sectionData] = sortedSections[i];
+      const nextSection = sortedSections[i + 1];
+      
+      let height = 200; // Default height
+      
+      // Calculate height from current section to next section
+      if (nextSection) {
+        height = nextSection[1].y - sectionData.y;
+      }
+      
+      updatedSections[name] = {
+        ...sectionData,
+        height
+      };
+    }
+    
+    return updatedSections;
+  }, []);
+
   // Helper function to get current section based on scroll position
   const getCurrentSection = useCallback((scrollY: number): string | null => {
     const sectionKeys = Object.keys(sectionPositions);
     if (sectionKeys.length === 0) return null;
     
-    let currentSection: string | null = null;
-    let minDistance = Infinity;
-
     // Adjust scroll position to account for sticky tabs height
     const adjustedScrollY = scrollY + tabsHeight;
 
-    // Use for...of for better performance than forEach
-    for (const [name, position] of Object.entries(sectionPositions)) {
-      const distance = Math.abs(adjustedScrollY - position);
-      if (distance < minDistance) {
-        minDistance = distance;
-        currentSection = name;
-        // Early exit if we find a very close match
-        if (distance < 10) break;
+    // Sort sections by their position to process them in order
+    const sortedSections = Object.entries(sectionPositions).sort(([, a], [, b]) => a.y - b.y);
+    
+    // Find the last section that has started (top is visible) but hasn't completely scrolled out
+    let activeSection: string | null = null;
+    
+    for (const [name, sectionData] of Object.entries(sectionPositions)) {
+      const { y: sectionY, height: sectionHeight } = sectionData;
+      const sectionBottom = sectionY + sectionHeight;
+      
+      // A section is considered active if:
+      // 1. Its top has passed the current scroll position (section has started)
+      // 2. Its bottom hasn't passed the current scroll position (section hasn't completely scrolled out)
+      if (sectionY <= adjustedScrollY && sectionBottom > adjustedScrollY) {
+        activeSection = name;
       }
     }
 
-    return currentSection;
+    // If no section is currently visible, find the closest section that should be active
+    if (!activeSection) {
+      let minDistance = Infinity;
+      
+      for (const [name, sectionData] of Object.entries(sectionPositions)) {
+        const { y: sectionY } = sectionData;
+        const distance = Math.abs(adjustedScrollY - sectionY);
+        if (distance < minDistance) {
+          minDistance = distance;
+          activeSection = name;
+        }
+      }
+    }
+
+    return activeSection;
   }, [sectionPositions, tabsHeight]);
 
   // Debounced section change handler to reduce excessive callbacks
@@ -108,10 +154,10 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
       scrollViewRef.current?.scrollToEnd({ animated });
     },
     scrollToSection: (sectionName: string, animated: boolean = true) => {
-      const position = sectionPositions[sectionName];
-      if (position !== undefined) {
+      const sectionData = sectionPositions[sectionName];
+      if (sectionData !== undefined) {
         // Adjust position to account for sticky tabs height
-        const adjustedPosition = Math.max(0, position - tabsHeight);
+        const adjustedPosition = Math.max(0, sectionData.y - tabsHeight);
 
         setIsProgrammaticScroll(true);
         scrollViewRef.current?.scrollTo({ y: adjustedPosition, animated });
@@ -126,9 +172,21 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
         console.warn(`Section '${sectionName}' not found. Available sections:`, Object.keys(sectionPositions));
       }
     },
-    registerSection: (sectionName: string, yPosition: number) => {
-      setSectionPositions(prev => ({ ...prev, [sectionName]: yPosition }));
-
+    registerSection: (sectionName: string, yPosition: number, height: number = 0) => {
+      setRawSections(prev => {
+        const newSections = { ...prev, [sectionName]: { y: yPosition, isFooter: false } };
+        const calculatedHeights = calculateSectionHeights(newSections);
+        setSectionPositions(calculatedHeights);
+        return newSections;
+      });
+    },
+    registerFooterSection: (sectionName: string, yPosition: number, height: number = 0) => {
+      setRawSections(prev => {
+        const newSections = { ...prev, [sectionName]: { y: yPosition, isFooter: true } };
+        const calculatedHeights = calculateSectionHeights(newSections);
+        setSectionPositions(calculatedHeights);
+        return newSections;
+      });
     },
   }));
 
@@ -163,6 +221,25 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
     };
   }, [screenHeight]);
 
+  // Recalculate footer section positions when button height becomes available
+  useEffect(() => {
+    if (cachedButtonHeight > 0) {
+      setRawSections(prev => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach(key => {
+          if (updated[key].isFooter) {
+            updated[key] = {
+              ...updated[key],
+              y: updated[key].y - cachedButtonHeight
+            };
+          }
+        });
+        const calculatedHeights = calculateSectionHeights(updated);
+        setSectionPositions(calculatedHeights);
+        return updated;
+      });
+    }
+  }, [cachedButtonHeight, calculateSectionHeights]);
 
 
   const measureButtonPosition = useCallback(() => {
@@ -182,16 +259,32 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
   }, [cachedButtonHeight]);
 
   const handleScroll = useCallback((event: any) => {
-    const { contentOffset, layoutMeasurement } = event.nativeEvent;
+    const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
     const scrollY = contentOffset.y;
     const currentScreenHeight = layoutMeasurement.height;
+    const contentHeight = contentSize.height;
 
     // Early return if no thresholds calculated yet
     if (cachedButtonCenterY === 0 || cachedButtonHeight === 0) return;
 
     // Check for section changes and notify parent (only for manual scrolling)
     if (onSectionChange && Object.keys(sectionPositions).length > 0 && !isProgrammaticScroll) {
-      const currentSection = getCurrentSection(scrollY);
+      let currentSection = getCurrentSection(scrollY);
+      
+      // Special case: If scrolled to the end, always activate the last section
+      if (contentHeight > 0) {
+        const availableScrollHeight = currentScreenHeight;
+        const distanceFromEnd = contentHeight - (scrollY + availableScrollHeight);
+        
+        // If we're within 100px of the end, activate the last section
+        if (distanceFromEnd < 100) {
+          const sortedSections = Object.entries(sectionPositions).sort(([, a], [, b]) => a.y - b.y);
+          if (sortedSections.length > 0) {
+            currentSection = sortedSections[sortedSections.length - 1][0];
+          }
+        }
+      }
+      
       if (currentSection && currentSection !== currentSectionRef.current) {
         currentSectionRef.current = currentSection;
         handleSectionChange(currentSection);
@@ -295,7 +388,15 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
       {/* Sticky Button */}
       {isButtonStuck && (
         <View style={styles.stickyButtonContainer}>
-          {memoizedButtonContent}
+          <View style={styles.gradientBackground}>
+            <View style={styles.gradientLayer1} />
+            <View style={styles.gradientLayer2} />
+            <View style={styles.gradientLayer3} />
+            <View style={styles.gradientLayer4} />
+          </View>
+          <View style={styles.buttonContent}>
+            {memoizedButtonContent}
+          </View>
         </View>
       )}
     </View>
@@ -326,13 +427,56 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     zIndex: 1000,
+    width: '100%',
+    alignSelf: 'stretch',
+    borderTopWidth: 1,
+    borderColor: '#9B9B9B',
+  },
+  gradientBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  gradientLayer1: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '25%',
+    backgroundColor: 'rgba(255, 255, 255, 1)',
+  },
+  gradientLayer2: {
+    position: 'absolute',
+    top: '25%',
+    left: 0,
+    right: 0,
+    height: '25%',
+    backgroundColor: 'rgba(255, 255, 255, 0.875)',
+  },
+  gradientLayer3: {
+    position: 'absolute',
+    top: '50%',
+    left: 0,
+    right: 0,
+    height: '25%',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+  },
+  gradientLayer4: {
+    position: 'absolute',
+    top: '75%',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  buttonContent: {
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
     alignSelf: 'stretch',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderTopWidth: 1,
-    borderColor: '#9B9B9B',
+    paddingVertical: 10,
   },
   buttonContentWrapper: {
     width: '100%',
