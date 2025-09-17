@@ -79,7 +79,28 @@ const id = loader.show({
 #### `loader.hide()`
 Hides the current loader.
 
-**Note:** Only one loader can be shown at a time. Calling `show()` while another loader is visible will replace it.
+#### `loader.setVisible(visible, options?)`
+Set loader visibility based on boolean parameter.
+
+**Parameters:**
+- `visible` (boolean): true to show loader, false to hide loader
+- `options` (LoaderOptions, optional): Loader configuration (only used when showing)
+
+**Returns:** `string | undefined` - Loader ID if showing, undefined if hiding
+
+**Example:**
+```tsx
+// Show loader
+const id = loader.setVisible(true);
+
+// Hide loader
+loader.setVisible(false);
+
+// Show with options
+const id = loader.setVisible(true, { size: 'small' });
+```
+
+**Note:** Only one loader can be shown at a time. Calling `show()` or `setVisible(true)` while another loader is visible will replace it.
 
 
 ### LoaderOptions Interface
@@ -130,6 +151,47 @@ const loadData = async () => {
     loader.hide();
     // Handle error
   }
+};
+```
+
+### Using the setVisible Method
+
+```tsx
+// Simple show/hide with boolean
+const isLoading = true;
+loader.setVisible(isLoading);
+
+// With options when showing
+const isLoading = true;
+const id = loader.setVisible(isLoading, { size: 'small' });
+
+// Conditional loading
+const handleAction = async () => {
+  loader.setVisible(true);
+  
+  try {
+    await performAction();
+  } finally {
+    loader.setVisible(false);
+  }
+};
+```
+
+### State-Based Loading
+
+```tsx
+const [isLoading, setIsLoading] = useState(false);
+
+// Show/hide based on state
+useEffect(() => {
+  loader.setVisible(isLoading);
+}, [isLoading]);
+
+// Or directly in event handlers
+const handleSubmit = () => {
+  setIsLoading(true);
+  // ... perform action
+  setIsLoading(false);
 };
 ```
 

@@ -34,6 +34,16 @@ const LoaderExample: React.FC<LoaderExampleProps> = ({ onNavigateBack }) => {
     }, 3000);
   };
 
+  const handleSetVisibleLoader = () => {
+    // setVisible method example
+    loader.setVisible(true, { size: 'large' });
+    
+    // Hide after 3 seconds
+    setTimeout(() => {
+      loader.setVisible(false);
+    }, 3000);
+  };
+
 
   const handleShowCustomLoader = () => {
     loader.show({
@@ -75,6 +85,9 @@ const LoaderExample: React.FC<LoaderExampleProps> = ({ onNavigateBack }) => {
           Show Large Loader
         </Button>
         
+        <Button onPress={handleSetVisibleLoader} style={styles.button}>
+          Set Visible Loader (Generic Method)
+        </Button>
         
         <Button onPress={handleShowCustomLoader} style={styles.button}>
           Show Custom Loader

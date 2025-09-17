@@ -95,6 +95,21 @@ class LoaderService {
       }, 300);
     }
   }
+
+  /**
+   * Set loader visibility based on boolean parameter
+   * @param visible - true to show loader, false to hide loader
+   * @param options - optional loader options (only used when showing)
+   * @returns loader ID if showing, undefined if hiding
+   */
+  public setVisible(visible: boolean, options: LoaderOptions = {}): string | undefined {
+    if (visible) {
+      return this.show(options);
+    } else {
+      this.hide();
+      return undefined;
+    }
+  }
 }
 
 // Export singleton instance
