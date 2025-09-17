@@ -12,3 +12,7 @@ export type { ThemeColors } from '../utils/ResponsiveStyle/ResponsiveStyleSheet'
 
 // Storage Example Component
 export { default as StorageExample } from './StorageExample';
+
+// Loader Component
+export { Loader, LoaderProvider, loader } from '../utils/loader';
+export type { LoaderProps, LoaderOptions, LoaderInstance } from '../utils/loader';

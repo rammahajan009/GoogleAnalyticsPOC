@@ -7,9 +7,10 @@ import { ResponsiveStyleSheet, s, f, b, sh } from '../utils/ResponsiveStyle/Resp
 
 interface AnalyticsScreenProps {
   onNavigateToSticky: () => void;
+  onNavigateToLoader?: () => void;
 }
 
-const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ onNavigateToSticky }) => {
+const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ onNavigateToSticky, onNavigateToLoader }) => {
   const [selectedProject, setSelectedProject] = useState('india');
   
   const {
@@ -211,6 +212,14 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ onNavigateToSticky })
           onPress={onNavigateToSticky}
           color={colors.primary}
         />
+        
+        {onNavigateToLoader && (
+          <Button
+            title="🔄 Loader Demo"
+            onPress={onNavigateToLoader}
+            color={colors.secondary}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
