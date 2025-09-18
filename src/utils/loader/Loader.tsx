@@ -5,16 +5,29 @@ import {
   ActivityIndicator,
   AccessibilityInfo,
 } from 'react-native';
+import { ModalManager, ModalType } from '../ModalManager';
 
 export interface LoaderProps {
   visible: boolean;
   size?: 'small' | 'large';
+  id?: string;
 }
 
 const Loader: React.FC<LoaderProps> = React.memo(({
   visible,
   size = 'large',
+  id = 'default-loader',
 }) => {
+  // Register with ModalManager and get z-index
+  const zIndex = useMemo(() => {
+    if (visible) {
+      return ModalManager.register(id, ModalType.LOADER, visible);
+    } else {
+      ModalManager.unregister(id);
+      return null;
+    }
+  }, [id, visible]);
+
   useEffect(() => {
     if (visible) {
       AccessibilityInfo.announceForAccessibility('Loading');
@@ -46,7 +59,10 @@ const Loader: React.FC<LoaderProps> = React.memo(({
 
   return (
     <View
-      style={styles.loaderContainer}
+      style={[
+        styles.loaderContainer,
+        zIndex ? { zIndex } : undefined,
+      ]}
       {...accessibilityProps}
     >
       <ActivityIndicator {...activityIndicatorProps} />
@@ -61,7 +77,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 9999,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     alignItems: 'center',
     justifyContent: 'center',

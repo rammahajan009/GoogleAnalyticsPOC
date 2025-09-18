@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   Modal,
@@ -10,6 +10,7 @@ import {
 import { ResponsiveStyleSheet } from '../ResponsiveStyle/ResponsiveStyleSheet';
 import Typography from '../../components/Typography/Typography';
 import Button from '../../components/Button/Button';
+import { ModalManager, ModalType } from '../ModalManager';
 
 export interface AlertButton {
   text: string;
@@ -24,6 +25,7 @@ export interface AlertProps {
   message?: string;
   buttons?: AlertButton[];
   type?: 'default' | 'success' | 'warning' | 'error' | 'info';
+  id?: string;
 }
 
 const Alert: React.FC<AlertProps> = ({
@@ -33,6 +35,7 @@ const Alert: React.FC<AlertProps> = ({
   message,
   buttons = [{ text: 'OK', style: 'default' }],
   type = 'default',
+  id = 'default-alert',
 }) => {
   // Handle close
   const handleClose = useCallback(() => {
@@ -83,6 +86,16 @@ const Alert: React.FC<AlertProps> = ({
     }
   }, [type, themeColors]);
 
+  // Register with ModalManager and get z-index
+  const zIndex = useMemo(() => {
+    if (visible) {
+      return ModalManager.register(id, ModalType.ALERT, visible);
+    } else {
+      ModalManager.unregister(id);
+      return null;
+    }
+  }, [id, visible]);
+
   const hasIcon = getTypeIcon() !== null;
   const hasTitle = !!title;
   const showHeader = hasIcon || hasTitle;
@@ -105,7 +118,10 @@ const Alert: React.FC<AlertProps> = ({
     >
       <TouchableWithoutFeedback onPress={handleClose}>
         <View 
-          style={styles.backdrop} 
+          style={[
+            styles.backdrop,
+            zIndex ? { zIndex: zIndex - 1 } : undefined,
+          ]} 
           accessible={true}
           accessibilityLabel="Backdrop"
           accessibilityHint="Tap outside the alert to dismiss it"
@@ -113,7 +129,10 @@ const Alert: React.FC<AlertProps> = ({
         />
       </TouchableWithoutFeedback>
 
-      <View style={styles.container}>
+      <View style={[
+        styles.container,
+        zIndex ? { zIndex } : undefined,
+      ]}>
         <View
           style={[
             styles.alert,

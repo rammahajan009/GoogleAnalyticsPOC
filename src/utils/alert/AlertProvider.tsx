@@ -62,6 +62,7 @@ const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
           message={currentAlert.options.message}
           buttons={currentAlert.options.buttons}
           type={currentAlert.options.type}
+          id={currentAlert.id}
         />
       )}
     </View>
