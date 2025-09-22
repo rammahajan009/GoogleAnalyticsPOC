@@ -308,14 +308,16 @@ export class ResponsiveStyleSheet {
    */
   static responsiveShadow(shadow: keyof typeof ResponsiveStyleSheet.SHADOW_SCALE) {
     const shadowConfig = this.SHADOW_SCALE[shadow];
-    const shadowOffset = this.width(2);
+    const baseOffset = 2;
+    const responsiveOffset = this.width(baseOffset);
+    const responsiveRadius = this.width(baseOffset);
     
     return {
       shadowColor: '#000000',
-      shadowOffset: { width: 0, height: shadowOffset },
+      shadowOffset: { width: 0, height: responsiveOffset },
       shadowOpacity: shadowConfig.shadowOpacity,
-      shadowRadius: shadowOffset,
-      elevation: shadowConfig.elevation,
+      shadowRadius: responsiveRadius,
+      elevation: Math.round(this.width(shadowConfig.elevation)),
     };
   }
 
@@ -374,12 +376,12 @@ export class ResponsiveStyleSheet {
   }
 
   /**
-   * Get responsive padding/margin for different sides
+   * Get responsive spacing for different sides (both margin and padding)
    * @param top - Top spacing
    * @param right - Right spacing
    * @param bottom - Bottom spacing
    * @param left - Left spacing
-   * @returns Responsive spacing object
+   * @returns Responsive spacing object with both margin and padding
    */
   static responsiveSpacingSides(
     top: keyof typeof ResponsiveStyleSheet.SPACING_SCALE,
@@ -388,6 +390,10 @@ export class ResponsiveStyleSheet {
     left: keyof typeof ResponsiveStyleSheet.SPACING_SCALE
   ) {
     return {
+      marginTop: this.responsiveSpacing(top),
+      marginRight: this.responsiveSpacing(right),
+      marginBottom: this.responsiveSpacing(bottom),
+      marginLeft: this.responsiveSpacing(left),
       paddingTop: this.responsiveSpacing(top),
       paddingRight: this.responsiveSpacing(right),
       paddingBottom: this.responsiveSpacing(bottom),

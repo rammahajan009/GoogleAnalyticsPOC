@@ -1,13 +1,22 @@
 import { useCallback, useState } from 'react';
 import { analyticsService } from '../services/AnalyticsService';
 
+// Type aliases for better readability and maintainability
+type AnalyticsParameters = Record<string, string | number | boolean>;
+type PurchaseItem = {
+  item_id: string;
+  item_name: string;
+  price: number;
+  quantity: number;
+};
+
 export const useAnalytics = () => {
-  const [currentProject, setCurrentProjectState] = useState<string>('default');
+  const [currentProject, setCurrentProject] = useState<string>('default');
 
   // Set current project for analytics
-  const setCurrentProject = useCallback((projectId: string) => {
+  const setCurrentProjectState = useCallback((projectId: string) => {
     analyticsService.setCurrentProject(projectId);
-    setCurrentProjectState(projectId);
+    setCurrentProject(projectId);
   }, []);
 
   // Get current project
@@ -28,8 +37,8 @@ export const useAnalytics = () => {
   // Log event to current project
   const logEvent = useCallback(async (
     eventName: string,
-    parameters: Record<string, string | number | boolean> = {},
-    projectId?: string
+    projectId?: string,
+    parameters: AnalyticsParameters = {}
   ) => {
     return await analyticsService.logCustomEvent(eventName, parameters, projectId);
   }, []);
@@ -37,8 +46,8 @@ export const useAnalytics = () => {
   // Log event to multiple projects
   const logEventToMultipleProjects = useCallback(async (
     eventName: string,
-    parameters: Record<string, string | number | boolean> = {},
-    projectIds: string[]
+    projectIds: string[],
+    parameters: AnalyticsParameters = {}
   ) => {
     return await analyticsService.logEventToMultipleProjects({
       name: eventName,
@@ -58,8 +67,8 @@ export const useAnalytics = () => {
   // Log button click
   const logButtonClick = useCallback(async (
     buttonName: string,
-    additionalParams: Record<string, string | number | boolean> = {},
-    projectId?: string
+    projectId?: string,
+    additionalParams: AnalyticsParameters = {}
   ) => {
     return await analyticsService.logButtonClick(buttonName, additionalParams, projectId);
   }, []);
@@ -79,8 +88,8 @@ export const useAnalytics = () => {
   const logError = useCallback(async (
     errorMessage: string,
     errorCode?: string,
-    additionalParams: Record<string, string | number | boolean> = {},
-    projectId?: string
+    projectId?: string,
+    additionalParams: AnalyticsParameters = {}
   ) => {
     return await analyticsService.logError(errorMessage, errorCode, additionalParams, projectId);
   }, []);
@@ -89,9 +98,9 @@ export const useAnalytics = () => {
   const logPurchase = useCallback(async (
     transactionId: string,
     value: number,
+    projectId?: string,
     currency: string = 'USD',
-    items: Array<{ item_id: string; item_name: string; price: number; quantity: number }> = [],
-    projectId?: string
+    items: PurchaseItem[] = []
   ) => {
     return await analyticsService.logPurchase(transactionId, value, currency, items, projectId);
   }, []);
@@ -109,7 +118,7 @@ export const useAnalytics = () => {
   return {
     // Project management
     currentProject,
-    setCurrentProject,
+    setCurrentProject: setCurrentProjectState,
     getCurrentProject,
     initializeProject,
     initializeCurrentProject,

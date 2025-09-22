@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
-  TouchableOpacity,
   ScrollView,
   TextInput,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
@@ -36,7 +34,7 @@ const ReduxSagaExampleContent: React.FC = () => {
 
   // Local state
   const [email, setEmail] = useState('user@example.com');
-  const [password, setPassword] = useState('password123');
+  const [password, setPassword] = useState('');
 
   // Handle login
   const handleLogin = () => {
@@ -395,7 +393,8 @@ const ReduxSagaExampleWrapper: React.FC = () => {
     
     if (errorType === 'auth') {
       console.log('🔄 Dispatching loginRequest...');
-      dispatch(loginRequest({ email: 'user@example.com', password: 'password123' }));
+      // Use default credentials for retry
+      dispatch(loginRequest({ email: 'user@example.com', password: 'password' }));
     } else if (errorType === 'user') {
       console.log('🔄 Dispatching fetchUsersRequest...');
       dispatch(fetchUsersRequest());

@@ -18,9 +18,9 @@ export interface ModalInstance {
 }
 
 class ModalManagerClass {
-  private modals: Map<string, ModalInstance> = new Map();
-  private baseZIndex = 10000; // Base z-index for modals
-  private typeZIndexMap: Map<ModalType, number> = new Map([
+  private readonly modals: Map<string, ModalInstance> = new Map();
+  private readonly baseZIndex = 10000; // Base z-index for modals
+  private readonly typeZIndexMap: Map<ModalType, number> = new Map([
     [ModalType.ALERT, 0],           // Lowest priority
     [ModalType.CONFIRMATION, 100],  // Medium priority
     [ModalType.CUSTOM, 200],        // Higher priority
@@ -112,7 +112,6 @@ class ModalManagerClass {
    * Get next offset for a modal type to ensure unique z-index
    */
   private getNextOffset(type: ModalType): number {
-    const typeZIndex = this.typeZIndexMap.get(type) || 0;
     const modalsOfSameType = Array.from(this.modals.values())
       .filter(modal => modal.type === type);
     

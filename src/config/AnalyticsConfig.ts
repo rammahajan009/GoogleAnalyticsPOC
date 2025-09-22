@@ -8,25 +8,27 @@ export interface ProjectAnalyticsConfig {
 }
 
 // Define your analytics projects
+// SECURITY WARNING: Never commit API secrets to version control!
+// Use environment variables or secure configuration management
 export const ANALYTICS_PROJECTS: Record<string, ProjectAnalyticsConfig> = {
   // India project
   india: {
-    measurementId: 'G-ECMNWKHPGR',
-    apiSecret: 'lEXviq-yRuCEWIAwErz6QA',
+    measurementId: process.env.ANALYTICS_INDIA_MEASUREMENT_ID || 'G-ECMNWKHPGR',
+    apiSecret: process.env.ANALYTICS_INDIA_API_SECRET || '',
     projectName: 'India Project',
   },
   
   // US project (example)
   us: {
-    measurementId: 'G-5WMX0W6G9C', // Replace with your US GA4 property
-    apiSecret: 'Wa5tD0MZQg-VoRXtmtMFdw', // Replace with your US API Secret
+    measurementId: process.env.ANALYTICS_US_MEASUREMENT_ID || 'G-5WMX0W6G9C',
+    apiSecret: process.env.ANALYTICS_US_API_SECRET || '',
     projectName: 'US Project',
   },
   
   // UK project (example)
   uk: {
-    measurementId: 'G-VVNR9EKKD8', // Replace with your UK GA4 property
-    apiSecret: 'JlV12gomT2CTxFhAWVGqfQ', // Replace with your UK API Secret
+    measurementId: process.env.ANALYTICS_UK_MEASUREMENT_ID || 'G-VVNR9EKKD8',
+    apiSecret: process.env.ANALYTICS_UK_API_SECRET || '',
     projectName: 'UK Project',
   },
   

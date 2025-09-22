@@ -1,6 +1,5 @@
 import React, { Component, ReactNode } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { ApiError } from './HttpClient';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -121,8 +120,8 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         errorMessage = this.getErrorMessage();
         errorType = 'react';
       } else if (hasReduxErrors) {
-        errorMessage = this.props.reduxErrors![0].message;
-        errorType = this.props.reduxErrors![0].type;
+        errorMessage = this.props.reduxErrors[0].message;
+        errorType = this.props.reduxErrors[0].type;
       }
 
       return (

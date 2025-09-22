@@ -134,7 +134,7 @@ const newUser = await httpClient.post('/users', {
 // POST request with URL-encoded data (for legacy APIs)
 const loginResponse = await httpClient.post('/auth/login', {
   username: 'john',
-  password: 'password123'
+  password: 'your-password-here'
 }, { contentType: 'urlencoded' });
 
 // PUT request with authentication

@@ -4,7 +4,6 @@ import {
   Modal,
   StyleSheet,
   TouchableWithoutFeedback,
-  Platform,
   AccessibilityInfo,
 } from 'react-native';
 import { ResponsiveStyleSheet } from '../ResponsiveStyle/ResponsiveStyleSheet';
@@ -142,7 +141,7 @@ const Alert: React.FC<AlertProps> = ({
             },
           ]}
           accessible={true}
-          accessibilityLabel={`${type} alert${title ? `: ${title}` : ''}`}
+          accessibilityLabel={`${type} alert${title ? ': ' + title : ''}`}
           accessibilityHint={`${message ? message + '. ' : ''}Use the buttons below to respond to this alert.`}
           accessibilityRole="alert"
           accessibilityViewIsModal={true}
@@ -209,7 +208,7 @@ const Alert: React.FC<AlertProps> = ({
           >
             {buttons.map((button, index) => (
               <Button
-                key={index}
+                key={`${button.text}-${index}`}
                 onPress={() => handleButtonPress(button)}
                 style={[
                   styles.button, 

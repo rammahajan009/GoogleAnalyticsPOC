@@ -3,7 +3,6 @@ import axios, {
   AxiosRequestConfig,
   AxiosResponse,
   AxiosError,
-  AxiosRequestHeaders,
 } from 'axios';
 import { HTTP_CLIENT_CONFIG } from './HttpConfig';
 
@@ -60,7 +59,7 @@ const DEFAULT_CONFIG: HttpClientConfig = {
 };
 
 class HttpClient {
-  private axiosInstance: AxiosInstance;
+  private readonly axiosInstance: AxiosInstance;
   private config: HttpClientConfig;
   private authToken: string | null = null;
   private refreshToken: string | null = null;
@@ -123,113 +122,178 @@ class HttpClient {
 
     // Response interceptor for refresh token handling
     this.axiosInstance.interceptors.response.use(
-      (response) => {
-        return response;
-      },
-      async (error) => {
-        const originalRequest = error.config;
-
-        // Handle CSRF token expiration (403 Forbidden or 419 Token Mismatch)
-        if ((error.response?.status === 403 || error.response?.status === 419) && 
-            !originalRequest._retryCsrf && 
-            !originalRequest.skipCsrfToken &&
-            this.config.csrfTokenEndpoint) {
-          
-          if (this.isRefreshingCsrf) {
-            // If already refreshing CSRF, queue this request
-            return new Promise((resolve, reject) => {
-              this.csrfFailedQueue.push({ resolve, reject });
-            }).then(() => {
-              return this.axiosInstance.request(originalRequest);
-            });
-          }
-
-          originalRequest._retryCsrf = true;
-          this.isRefreshingCsrf = true;
-
-          try {
-            const newCsrfToken = await this.refreshCsrfToken();
-            if (newCsrfToken) {
-              // Update CSRF token and retry original request
-              this.csrfToken = newCsrfToken;
-              if (this.config.onCsrfTokenRefresh) {
-                this.config.onCsrfTokenRefresh(newCsrfToken);
-              }
-              
-              // Retry all queued CSRF requests
-              this.processCsrfQueue(null, newCsrfToken);
-              
-              // Retry original request
-              return this.axiosInstance.request(originalRequest);
-            }
-          } catch (refreshError) {
-            // CSRF refresh failed, clear token and notify
-            this.csrfToken = null;
-            if (this.config.onCsrfTokenRefreshFailed) {
-              this.config.onCsrfTokenRefreshFailed();
-            }
-            
-            // Reject all queued CSRF requests
-            this.processCsrfQueue(refreshError, null);
-            
-            return Promise.reject(refreshError instanceof Error ? refreshError : new Error(String(refreshError)));
-          } finally {
-            this.isRefreshingCsrf = false;
-          }
-        }
-
-        // Handle 401 errors and refresh token if available
-        if (error.response?.status === 401 && 
-            !originalRequest._retry && 
-            !originalRequest.skipRefreshToken &&
-            this.refreshToken) {
-          
-          if (this.isRefreshing) {
-            // If already refreshing, queue this request
-            return new Promise((resolve, reject) => {
-              this.failedQueue.push({ resolve, reject });
-            }).then(() => {
-              return this.axiosInstance.request(originalRequest);
-            });
-          }
-
-          originalRequest._retry = true;
-          this.isRefreshing = true;
-
-          try {
-            const newToken = await this.refreshAuthToken();
-            if (newToken) {
-              // Update token and retry original request
-              this.authToken = newToken;
-              if (this.config.onTokenRefresh) {
-                this.config.onTokenRefresh(newToken);
-              }
-              
-              // Retry all queued requests
-              this.processQueue(null, newToken);
-              
-              // Retry original request
-              return this.axiosInstance.request(originalRequest);
-            }
-          } catch (refreshError) {
-            // Refresh failed, clear tokens and notify
-            this.clearTokens();
-            if (this.config.onTokenRefreshFailed) {
-              this.config.onTokenRefreshFailed();
-            }
-            
-            // Reject all queued requests
-            this.processQueue(refreshError, null);
-            
-            return Promise.reject(refreshError instanceof Error ? refreshError : new Error(String(refreshError)));
-          } finally {
-            this.isRefreshing = false;
-          }
-        }
-
-        return Promise.reject(error instanceof Error ? error : new Error(String(error)));
-      }
+      (response) => response,
+      async (error) => this.handleResponseError(error)
     );
+  }
+
+  /**
+   * Handle response errors with token refresh logic
+   */
+  private async handleResponseError(error: any): Promise<any> {
+    const originalRequest = error.config;
+
+    // Try to handle CSRF token expiration
+    const csrfResult = await this.handleCsrfTokenError(error, originalRequest);
+    if (csrfResult) return csrfResult;
+
+    // Try to handle auth token expiration
+    const authResult = await this.handleAuthTokenError(error, originalRequest);
+    if (authResult) return authResult;
+
+    // Reject with original error
+    return Promise.reject(error instanceof Error ? error : new Error(String(error)));
+  }
+
+  /**
+   * Handle CSRF token expiration errors
+   */
+  private async handleCsrfTokenError(error: any, originalRequest: any): Promise<any> {
+    const isCsrfError = (error.response?.status === 403 || error.response?.status === 419) && 
+                       !originalRequest._retryCsrf && 
+                       !originalRequest.skipCsrfToken &&
+                       this.config.csrfTokenEndpoint;
+
+    if (!isCsrfError) return null;
+
+    if (this.isRefreshingCsrf) {
+      return this.queueCsrfRequest(originalRequest);
+    }
+
+    return this.refreshCsrfTokenAndRetry(originalRequest);
+  }
+
+  /**
+   * Handle auth token expiration errors
+   */
+  private async handleAuthTokenError(error: any, originalRequest: any): Promise<any> {
+    const isAuthError = error.response?.status === 401 && 
+                       !originalRequest._retry && 
+                       !originalRequest.skipRefreshToken &&
+                       this.refreshToken;
+
+    if (!isAuthError) return null;
+
+    if (this.isRefreshing) {
+      return this.queueAuthRequest(originalRequest);
+    }
+
+    return this.refreshAuthTokenAndRetry(originalRequest);
+  }
+
+  /**
+   * Queue CSRF request for retry
+   */
+  private queueCsrfRequest(originalRequest: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.csrfFailedQueue.push({ resolve, reject });
+    }).then(() => {
+      return this.axiosInstance.request(originalRequest);
+    });
+  }
+
+  /**
+   * Queue auth request for retry
+   */
+  private queueAuthRequest(originalRequest: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.failedQueue.push({ resolve, reject });
+    }).then(() => {
+      return this.axiosInstance.request(originalRequest);
+    });
+  }
+
+  /**
+   * Refresh CSRF token and retry request
+   */
+  private async refreshCsrfTokenAndRetry(originalRequest: any): Promise<any> {
+    originalRequest._retryCsrf = true;
+    this.isRefreshingCsrf = true;
+
+    try {
+      const newCsrfToken = await this.refreshCsrfToken();
+      if (newCsrfToken) {
+        this.updateCsrfToken(newCsrfToken);
+        this.processCsrfQueue(null, newCsrfToken);
+        return this.axiosInstance.request(originalRequest);
+      }
+    } catch (refreshError) {
+      this.handleCsrfRefreshFailure(refreshError);
+      return Promise.reject(this.createError(refreshError));
+    } finally {
+      this.isRefreshingCsrf = false;
+    }
+  }
+
+  /**
+   * Refresh auth token and retry request
+   */
+  private async refreshAuthTokenAndRetry(originalRequest: any): Promise<any> {
+    originalRequest._retry = true;
+    this.isRefreshing = true;
+
+    try {
+      const newToken = await this.refreshAuthToken();
+      if (newToken) {
+        this.updateAuthToken(newToken);
+        this.processQueue(null, newToken);
+        return this.axiosInstance.request(originalRequest);
+      }
+    } catch (refreshError) {
+      this.handleAuthRefreshFailure(refreshError);
+      return Promise.reject(this.createError(refreshError));
+    } finally {
+      this.isRefreshing = false;
+    }
+  }
+
+  /**
+   * Update CSRF token and notify
+   */
+  private updateCsrfToken(token: string): void {
+    this.csrfToken = token;
+    if (this.config.onCsrfTokenRefresh) {
+      this.config.onCsrfTokenRefresh(token);
+    }
+  }
+
+  /**
+   * Update auth token and notify
+   */
+  private updateAuthToken(token: string): void {
+    this.authToken = token;
+    if (this.config.onTokenRefresh) {
+      this.config.onTokenRefresh(token);
+    }
+  }
+
+  /**
+   * Handle CSRF refresh failure
+   */
+  private handleCsrfRefreshFailure(error: any): void {
+    this.csrfToken = null;
+    if (this.config.onCsrfTokenRefreshFailed) {
+      this.config.onCsrfTokenRefreshFailed();
+    }
+    this.processCsrfQueue(error, null);
+  }
+
+  /**
+   * Handle auth refresh failure
+   */
+  private handleAuthRefreshFailure(error: any): void {
+    this.clearTokens();
+    if (this.config.onTokenRefreshFailed) {
+      this.config.onTokenRefreshFailed();
+    }
+    this.processQueue(error, null);
+  }
+
+  /**
+   * Create error from unknown type
+   */
+  private createError(error: any): Error {
+    return error instanceof Error ? error : new Error(String(error));
   }
 
   /**
@@ -391,12 +455,16 @@ class HttpClient {
   }
 
   /**
-   * Clear all tokens including CSRF
+   * Clear all tokens including CSRF and reset refresh state
    */
   clearAllTokens(): void {
     this.authToken = null;
     this.refreshToken = null;
     this.csrfToken = null;
+    this.isRefreshing = false;
+    this.isRefreshingCsrf = false;
+    this.failedQueue = [];
+    this.csrfFailedQueue = [];
   }
 
   /**
@@ -515,7 +583,7 @@ class HttpClient {
 
     // Handle network errors specifically
     if (!error.response) {
-      if (error.message && error.message.includes('Network Error')) {
+      if (error.message?.includes('Network Error')) {
         message = 'Network error. Please check your internet connection and try again.';
       } else if (error.code === 'ERR_NETWORK') {
         message = 'Network connection failed. Please check your internet connection.';
@@ -532,20 +600,8 @@ class HttpClient {
       message = (data as any).error;
     }
 
-    // Determine if error is retryable based on type
-    let isRetryable = false;
-    if (!error.response) {
-      // Network errors are generally retryable
-      isRetryable = true;
-    } else if (status && [408, 429, 500, 502, 503, 504].includes(status)) {
-      // Specific HTTP status codes are retryable
-      isRetryable = true;
-    }
-
-    // Override retryable status for certain error types
-    if (status === 401 || status === 403) {
-      isRetryable = false; // Don't retry auth errors
-    }
+    // Determine if error is retryable using existing method
+    const isRetryable = this.isErrorRetryable(error);
 
     return {
       message,

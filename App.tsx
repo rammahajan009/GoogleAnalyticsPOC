@@ -8,7 +8,6 @@
 import React, { useState } from 'react';
 import { StatusBar, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ResponsiveStyleSheet } from './src/utils/ResponsiveStyle/ResponsiveStyleSheet';
 import { LoaderProvider } from './src/components';
 import { AlertProvider } from './src/utils/alert';
 import AnalyticsScreen from './src/screens/AnalyticsScreen';
@@ -18,8 +17,6 @@ import LoaderExample from './src/examples/LoaderExample';
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
   const [currentScreen, setCurrentScreen] = useState<'analytics' | 'sticky' | 'loader'>('analytics');
-
-  const colors = ResponsiveStyleSheet.getThemeColors();
 
   const handleNavigateToSticky = () => {
     setCurrentScreen('sticky');

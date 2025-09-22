@@ -44,7 +44,7 @@ export interface AlertInstance {
 
 class AlertService extends EventEmitter {
   private static instance: AlertService;
-  private alerts: Map<string, AlertInstance> = new Map();
+  private readonly alerts: Map<string, AlertInstance> = new Map();
   private nextId = 1;
   private isShowingModal = false;
   private alertQueue: AlertInstance[] = [];

@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Button, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAnalytics } from '../hooks/useAnalytics';
-import { getProjectIds, getProjectConfig } from '../config/AnalyticsConfig';
-import { ResponsiveStyleSheet, s, f, b, sh } from '../utils/ResponsiveStyle/ResponsiveStyleSheet';
+import { getProjectConfig } from '../config/AnalyticsConfig';
+import { ResponsiveStyleSheet, s, f, b } from '../utils/ResponsiveStyle/ResponsiveStyleSheet';
 
 interface AnalyticsScreenProps {
   onNavigateToSticky: () => void;
@@ -23,7 +23,6 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ onNavigateToSticky, o
     logError,
     logPageView,
     logEventToMultipleProjects,
-    getInitializedProjects,
   } = useAnalytics();
 
   useEffect(() => {
@@ -35,7 +34,7 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ onNavigateToSticky, o
           await initializeCurrentProject(projectConfig);
 
           // Log app start event
-          await logEvent('app_start', {
+          await logEvent('app_start', currentProject, {
             app_version: '1.0.0',
             platform: 'react-native',
             project: currentProject,
@@ -47,7 +46,9 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ onNavigateToSticky, o
           console.log(`📊 Google Analytics initialized for ${currentProject}`);
         }
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         console.error('Failed to initialize Google Analytics:', error);
+        Alert.alert('Initialization Error', `Failed to initialize analytics: ${errorMessage}`);
       }
     };
 
@@ -56,14 +57,16 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ onNavigateToSticky, o
 
   const handleTestEvent = async () => {
     try {
-      await logEvent('test_button_clicked', {
+      await logEvent('test_button_clicked', currentProject, {
         timestamp: new Date().toISOString(),
         user_action: 'test',
         project: currentProject,
       });
       Alert.alert('Success', `Test event logged to ${currentProject}!`);
     } catch (error) {
-      Alert.alert('Error', 'Failed to log test event');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Test event logging error:', error);
+      Alert.alert('Analytics Error', `Failed to log test event: ${errorMessage}`);
     }
   };
 
@@ -72,47 +75,55 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ onNavigateToSticky, o
       await logUserAction('button_press', 'navigation', 'test_button', 1);
       Alert.alert('Success', `User action logged to ${currentProject}!`);
     } catch (error) {
-      Alert.alert('Error', 'Failed to log user action');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('User action logging error:', error);
+      Alert.alert('Analytics Error', `Failed to log user action: ${errorMessage}`);
     }
   };
 
   const handleErrorLog = async () => {
     try {
-      await logError('Test error occurred', 'TEST_ERROR_001', {
+      await logError('Test error occurred', 'TEST_ERROR_001', currentProject, {
         screen: 'main',
         user_id: 'test_user',
         project: currentProject,
       });
       Alert.alert('Success', `Error event logged to ${currentProject}!`);
     } catch (error) {
-      Alert.alert('Error', 'Failed to log error event');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Error event logging error:', error);
+      Alert.alert('Analytics Error', `Failed to log error event: ${errorMessage}`);
     }
   };
 
   const handleButtonClick = async () => {
     try {
-      await logButtonClick('demo_button', {
+      await logButtonClick('demo_button', currentProject, {
         screen: 'main',
         button_type: 'demo',
         project: currentProject,
       });
       Alert.alert('Success', `Button click logged to ${currentProject}!`);
     } catch (error) {
-      Alert.alert('Error', 'Failed to log button click');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Button click logging error:', error);
+      Alert.alert('Analytics Error', `Failed to log button click: ${errorMessage}`);
     }
   };
 
   const handleMultiProjectEvent = async () => {
     try {
-      const results = await logEventToMultipleProjects('multi_project_event', {
+      const results = await logEventToMultipleProjects('multi_project_event', ['india', 'us', 'uk'], {
         timestamp: new Date().toISOString(),
         event_type: 'multi_project_test',
-      }, ['india', 'us', 'uk']);
+      });
 
       const successCount = Object.values(results).filter(Boolean).length;
       Alert.alert('Success', `Event logged to ${successCount} projects!`);
     } catch (error) {
-      Alert.alert('Error', 'Failed to log multi-project event');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Multi-project event logging error:', error);
+      Alert.alert('Analytics Error', `Failed to log multi-project event: ${errorMessage}`);
     }
   };
 
@@ -126,7 +137,9 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ onNavigateToSticky, o
         Alert.alert('Success', `Switched to ${projectId} analytics!`);
       }
     } catch (error) {
-      Alert.alert('Error', `Failed to switch to ${projectId}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Project change error:', error);
+      Alert.alert('Project Switch Error', `Failed to switch to ${projectId}: ${errorMessage}`);
     }
   };
 
@@ -217,7 +230,7 @@ const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ onNavigateToSticky, o
           <Button
             title="🔄 Loader Demo"
             onPress={onNavigateToLoader}
-            color={colors.secondary}
+            color={colors.accent}
           />
         )}
       </View>

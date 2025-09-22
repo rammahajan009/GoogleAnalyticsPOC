@@ -1,5 +1,14 @@
 import { ClientIdManager } from '../utils/ClientIdManager';
 
+// Type aliases for better readability and maintainability
+type AnalyticsParameters = Record<string, string | number | boolean>;
+type PurchaseItem = {
+  item_id: string;
+  item_name: string;
+  price: number;
+  quantity: number;
+};
+
 export interface AnalyticsConfig {
   measurementId: string;
   apiSecret: string;
@@ -9,7 +18,7 @@ export interface AnalyticsConfig {
 
 export interface AnalyticsEvent {
   name: string;
-  parameters?: Record<string, string | number | boolean>;
+  parameters?: AnalyticsParameters;
   timestamp?: string;
   projectId?: string; // Optional: if not provided, uses current project
 }
@@ -20,9 +29,9 @@ export interface ProjectConfig {
 }
 
 class AnalyticsService {
-  private analyticsInstances: Map<string, any> = new Map();
+  private readonly analyticsInstances: Map<string, any> = new Map();
   private currentProject: string = 'default';
-  private baseUrl = 'https://www.google-analytics.com/mp/collect';
+  private readonly baseUrl = 'https://www.google-analytics.com/mp/collect';
 
   /**
    * Set the current project for analytics
@@ -158,7 +167,7 @@ class AnalyticsService {
    */
   async logCustomEvent(
     eventName: string, 
-    parameters: Record<string, string | number | boolean> = {},
+    parameters: AnalyticsParameters = {},
     projectId?: string
   ): Promise<boolean> {
     return this.logEvent({
@@ -191,7 +200,7 @@ class AnalyticsService {
    */
   async logButtonClick(
     buttonName: string, 
-    additionalParams: Record<string, string | number | boolean> = {},
+    additionalParams: AnalyticsParameters = {},
     projectId?: string
   ): Promise<boolean> {
     return this.logEvent({
@@ -214,7 +223,7 @@ class AnalyticsService {
     value?: number,
     projectId?: string
   ): Promise<boolean> {
-    const parameters: Record<string, string | number | boolean> = {
+    const parameters: AnalyticsParameters = {
       action,
       category,
     };
@@ -235,7 +244,7 @@ class AnalyticsService {
   async logError(
     errorMessage: string,
     errorCode?: string,
-    additionalParams: Record<string, string | number | boolean> = {},
+    additionalParams: AnalyticsParameters = {},
     projectId?: string
   ): Promise<boolean> {
     return this.logEvent({
@@ -256,10 +265,10 @@ class AnalyticsService {
     transactionId: string,
     value: number,
     currency: string = 'USD',
-    items: Array<{ item_id: string; item_name: string; price: number; quantity: number }> = [],
+    items: PurchaseItem[] = [],
     projectId?: string
   ): Promise<boolean> {
-    const parameters: Record<string, string | number | boolean> = {
+    const parameters: AnalyticsParameters = {
       transaction_id: transactionId,
       value,
       currency,
@@ -279,7 +288,7 @@ class AnalyticsService {
   /**
    * Get analytics instance for a specific project
    */
-  getAnalyticsInstance(projectId: string): any | undefined {
+  getAnalyticsInstance(projectId: string): any {
     return this.analyticsInstances.get(projectId);
   }
 

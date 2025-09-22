@@ -14,7 +14,7 @@ class LoaderService {
   private static instance: LoaderService;
   private currentLoader: LoaderInstance | null = null;
   private nextId = 1;
-  private listeners: Set<(loader: LoaderInstance | null) => void> = new Set();
+  private readonly listeners: Set<(loader: LoaderInstance | null) => void> = new Set();
   private hideTimeout: NodeJS.Timeout | null = null;
 
   private constructor() {}
@@ -97,7 +97,7 @@ class LoaderService {
   }
 
   /**
-   * Set loader visibility based on boolean parameter
+   * Set loader visibility - delegates to appropriate method based on parameters
    * @param visible - true to show loader, false to hide loader
    * @param options - optional loader options (only used when showing)
    * @returns loader ID if showing, undefined if hiding
@@ -105,10 +105,9 @@ class LoaderService {
   public setVisible(visible: boolean, options: LoaderOptions = {}): string | undefined {
     if (visible) {
       return this.show(options);
-    } else {
-      this.hide();
-      return undefined;
     }
+    this.hide();
+    return undefined;
   }
 }
 

@@ -19,10 +19,12 @@ const StorageExample: React.FC = () => {
         setKey('');
         setValue('');
       } else {
-        Alert.alert('Error', 'Failed to store item');
+        Alert.alert('Error', 'Failed to store item - storage operation returned false');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to store item');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      Alert.alert('Storage Error', `Failed to store item: ${errorMessage}`);
+      console.error('Storage setItem error:', error);
     }
   };
 
@@ -41,7 +43,9 @@ const StorageExample: React.FC = () => {
         Alert.alert('Not Found', 'No value found for this key');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to retrieve item');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      Alert.alert('Storage Error', `Failed to retrieve item: ${errorMessage}`);
+      console.error('Storage getItem error:', error);
     }
   };
 
@@ -58,10 +62,12 @@ const StorageExample: React.FC = () => {
         setKey('');
         setValue('');
       } else {
-        Alert.alert('Error', 'Failed to remove item');
+        Alert.alert('Error', 'Failed to remove item - storage operation returned false');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to remove item');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      Alert.alert('Storage Error', `Failed to remove item: ${errorMessage}`);
+      console.error('Storage removeItem error:', error);
     }
   };
 
@@ -77,10 +83,12 @@ const StorageExample: React.FC = () => {
       if (success) {
         Alert.alert('Success', 'Multiple items stored');
       } else {
-        Alert.alert('Error', 'Failed to store some items');
+        Alert.alert('Error', 'Failed to store some items - storage operation returned false');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to store multiple items');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      Alert.alert('Storage Error', `Failed to store multiple items: ${errorMessage}`);
+      console.error('Storage multiSet error:', error);
     }
   };
 
@@ -100,7 +108,9 @@ const StorageExample: React.FC = () => {
         Alert.alert('Not Found', 'No items found');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to retrieve items');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      Alert.alert('Storage Error', `Failed to retrieve items: ${errorMessage}`);
+      console.error('Storage multiGet error:', error);
     }
   };
 

@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { View, Text, Button, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StickyScrollView from '../components/StickyScrollView';
-import { ResponsiveStyleSheet, s, f, b, sh } from '../utils/ResponsiveStyle/ResponsiveStyleSheet';
+import { ResponsiveStyleSheet, s, f, b } from '../utils/ResponsiveStyle/ResponsiveStyleSheet';
 
 interface StickyScreenProps {
   onNavigateToAnalytics: () => void;

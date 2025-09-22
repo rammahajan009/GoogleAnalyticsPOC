@@ -6,11 +6,11 @@ import * as Keychain from 'react-native-keychain';
  */
 export class Storage {
   private static instance: Storage;
-  private servicePrefix: string;
+  private readonly servicePrefix: string;
   private isInitialized: boolean = false;
   
   // Simple caching for performance
-  private cache: Map<string, { value: string; timestamp: number }> = new Map();
+  private readonly cache: Map<string, { value: string; timestamp: number }> = new Map();
   private cacheTimeout: number = 5 * 60 * 1000; // 5 minutes
 
   private constructor(servicePrefix: string = 'Storage') {

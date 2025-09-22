@@ -8,7 +8,6 @@ interface AlertProviderProps {
 }
 
 const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
-  const [alerts, setAlerts] = useState<AlertInstance[]>([]);
   const [currentAlert, setCurrentAlert] = useState<AlertInstance | null>(null);
 
   useEffect(() => {
@@ -16,17 +15,13 @@ const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     const handleShow = (alertInstance: AlertInstance) => {
       // Only show one alert at a time
       setCurrentAlert(alertInstance);
-      setAlerts(prev => [...prev, alertInstance]);
     };
 
     const handleHide = (alertInstance: AlertInstance) => {
-      setAlerts(prev => prev.map(a => 
-        a.id === alertInstance.id ? { ...a, visible: false } : a
-      ));
+      // Alert is hidden, no need to track in state
     };
 
     const handleRemoved = (id: string) => {
-      setAlerts(prev => prev.filter(a => a.id !== id));
       // Clear current alert if it's the one being removed
       setCurrentAlert(prev => prev?.id === id ? null : prev);
     };

@@ -41,7 +41,6 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
   const [cachedButtonHeight, setCachedButtonHeight] = useState(0);
   const [cachedButtonCenterY, setCachedButtonCenterY] = useState(0);
   const [sectionPositions, setSectionPositions] = useState<Record<string, { y: number; height: number; isFooter?: boolean }>>({});
-  const [rawSections, setRawSections] = useState<Record<string, { y: number; isFooter?: boolean }>>({});
   const [isProgrammaticScroll, setIsProgrammaticScroll] = useState(false);
   const [tabsHeight, setTabsHeight] = useState(0);
   const buttonRef = useRef<View>(null);
@@ -87,9 +86,6 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
     
     // Adjust scroll position to account for sticky tabs height
     const adjustedScrollY = scrollY + tabsHeight;
-
-    // Sort sections by their position to process them in order
-    const sortedSections = Object.entries(sectionPositions).sort(([, a], [, b]) => a.y - b.y);
     
     // Find the last section that has started (top is visible) but hasn't completely scrolled out
     let activeSection: string | null = null;
@@ -173,19 +169,15 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
       }
     },
     registerSection: (sectionName: string, yPosition: number, height: number = 0) => {
-      setRawSections(prev => {
-        const newSections = { ...prev, [sectionName]: { y: yPosition, isFooter: false } };
-        const calculatedHeights = calculateSectionHeights(newSections);
-        setSectionPositions(calculatedHeights);
-        return newSections;
+      setSectionPositions(prev => {
+        const newSections = { ...prev, [sectionName]: { y: yPosition, height: 0, isFooter: false } };
+        return calculateSectionHeights(newSections);
       });
     },
     registerFooterSection: (sectionName: string, yPosition: number, height: number = 0) => {
-      setRawSections(prev => {
-        const newSections = { ...prev, [sectionName]: { y: yPosition, isFooter: true } };
-        const calculatedHeights = calculateSectionHeights(newSections);
-        setSectionPositions(calculatedHeights);
-        return newSections;
+      setSectionPositions(prev => {
+        const newSections = { ...prev, [sectionName]: { y: yPosition, height: 0, isFooter: true } };
+        return calculateSectionHeights(newSections);
       });
     },
   }));
@@ -224,7 +216,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
   // Recalculate footer section positions when button height becomes available
   useEffect(() => {
     if (cachedButtonHeight > 0) {
-      setRawSections(prev => {
+      setSectionPositions(prev => {
         const updated = { ...prev };
         Object.keys(updated).forEach(key => {
           if (updated[key].isFooter) {
@@ -234,9 +226,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
             };
           }
         });
-        const calculatedHeights = calculateSectionHeights(updated);
-        setSectionPositions(calculatedHeights);
-        return updated;
+        return calculateSectionHeights(updated);
       });
     }
   }, [cachedButtonHeight, calculateSectionHeights]);
@@ -249,11 +239,6 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
       // Cache the button height when first measured
       if (height > 0 && cachedButtonHeight === 0) {
         setCachedButtonHeight(height);
-      }
-      // Only update cached center Y if position actually changed
-      if (height > 0 && pageY > 0) {
-        const centerY = pageY + (height / 2);
-        // setCachedButtonCenterY(centerY);
       }
     });
   }, [cachedButtonHeight]);

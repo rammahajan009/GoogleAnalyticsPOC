@@ -6,7 +6,6 @@ import {
   loginFailure,
   logoutRequest,
   logoutSuccess,
-  logoutFailure,
 } from '../slices/authSlice';
 
 // Types
@@ -26,62 +25,49 @@ interface LoginResponse {
   refreshToken: string;
 }
 
+// Helper functions
+function createUserFromResponse(response: any, credentials: LoginCredentials) {
+  return {
+    id: response.id.toString(),
+    email: credentials.email,
+    name: credentials.email.split('@')[0],
+    avatar: undefined,
+  };
+}
+
+function generateTokens(response: any) {
+  const timestamp = Date.now();
+  return {
+    token: `token_${response.id}_${timestamp}`,
+    refreshToken: `refresh_${response.id}_${timestamp}`,
+  };
+}
+
+function getErrorMessage(error: any): string {
+  if (error.response?.status === 401) return 'Invalid email or password';
+  if (error.response?.status === 400) return 'Please check your input';
+  if (error.response?.status === 500) return 'Server error. Please try again later';
+  if (error.code === 'ERR_NETWORK') return 'Network error. Please check your connection';
+  if (error.code === 'ECONNABORTED') return 'Request timeout. Please try again';
+  return error.message || 'Unknown error occurred';
+}
+
 // Login saga
 function* loginSaga(action: ReturnType<typeof loginRequest>): Generator<any, void, any> {
   try {
-    // Extract credentials from action payload
     const credentials: LoginCredentials = action.payload as any;
+    const response: any = yield call(ApiService.post, '/posts', credentials);
     
-    // Make API call using HTTP client - using JSONPlaceholder real API
-    const response: any = yield call(
-      ApiService.post,
-      '/posts',
-      credentials
-    );
-
-    // JSONPlaceholder returns the created post with an ID
-    const realUser = {
-      id: response.id.toString(),
-      email: credentials.email,
-      name: credentials.email.split('@')[0],
-      avatar: undefined,
-    };
-
-    // Generate a real token based on the response
-    const realToken = `token_${response.id}_${Date.now()}`;
-    const realRefreshToken = `refresh_${response.id}_${Date.now()}`;
-
-    // Set auth tokens in HTTP client for future requests
+    const realUser = createUserFromResponse(response, credentials);
+    const { token: realToken, refreshToken: realRefreshToken } = generateTokens(response);
+    
     ApiService.setAuthTokens(realToken, realRefreshToken);
-
-    // Dispatch success action
-    yield put(loginSuccess({
-      user: realUser,
-      token: realToken,
-      refreshToken: realRefreshToken,
-    }));
+    yield put(loginSuccess({ user: realUser, token: realToken, refreshToken: realRefreshToken }));
 
   } catch (error: any) {
-    // Handle different types of errors with better error messages
-    let errorMessage = 'Login failed';
-    
-    if (error.response?.status === 401) {
-      errorMessage = 'Invalid email or password';
-    } else if (error.response?.status === 400) {
-      errorMessage = 'Please check your input';
-    } else if (error.response?.status === 500) {
-      errorMessage = 'Server error. Please try again later';
-    } else if (error.code === 'ERR_NETWORK') {
-      errorMessage = 'Network error. Please check your connection';
-    } else if (error.code === 'ECONNABORTED') {
-      errorMessage = 'Request timeout. Please try again';
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-
-    // Log error for debugging
+    const errorMessage = getErrorMessage(error);
     console.error('Login saga error:', error);
-    
+    console.error(`Login failed: ${errorMessage}`);
     yield put(loginFailure(errorMessage));
   }
 }
@@ -100,6 +86,9 @@ function* logoutSaga(): Generator<any, void, any> {
     
   } catch (error: any) {
     // Even if logout API fails, clear local state
+    console.error('Logout saga error:', error);
+    console.warn(`Logout API failed: ${error instanceof Error ? error.message : 'Unknown error occurred'}, but clearing local state anyway`);
+    
     ApiService.clearTokens();
     yield put(logoutSuccess());
   }

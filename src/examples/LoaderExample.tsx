@@ -8,53 +8,51 @@ interface LoaderExampleProps {
 }
 
 const LoaderExample: React.FC<LoaderExampleProps> = ({ onNavigateBack }) => {
-  const handleShowBasicLoader = () => {
-    loader.show();
-    
-    // Hide after 3 seconds
+  // Helper functions to reduce nesting
+  const showLoaderWithTimeout = (size: 'small' | 'large' = 'large', timeout: number = 3000) => {
+    loader.show({ size });
+    setTimeout(() => loader.hide(), timeout);
+  };
+
+  const showLoaderWithSetVisible = (size: 'small' | 'large' = 'large', timeout: number = 3000) => {
+    loader.setVisible(true, { size });
+    setTimeout(() => loader.setVisible(false), timeout);
+  };
+
+  const showLoaderAfterDelay = (delay: number, size: 'small' | 'large' = 'large', timeout: number = 3000) => {
     setTimeout(() => {
-      loader.hide();
-    }, 3000);
+      loader.show({ size });
+      setTimeout(() => loader.hide(), timeout);
+    }, delay);
+  };
+
+  const showAlertAfterDelay = (message: string, delay: number = 0) => {
+    setTimeout(() => alert.show(message), delay);
+  };
+
+  const showComplexAlertAfterDelay = (alertConfig: any, delay: number = 0) => {
+    setTimeout(() => alert.show(alertConfig), delay);
+  };
+
+  // Handler functions
+  const handleShowBasicLoader = () => {
+    showLoaderWithTimeout('large', 3000);
   };
 
   const handleShowSmallLoader = () => {
-    loader.show({ size: 'small' });
-    
-    // Hide after 4 seconds
-    setTimeout(() => {
-      loader.hide();
-    }, 4000);
+    showLoaderWithTimeout('small', 4000);
   };
 
   const handleShowLargeLoader = () => {
-    loader.show({ size: 'large' });
-    
-    // Hide after 3 seconds
-    setTimeout(() => {
-      loader.hide();
-    }, 3000);
+    showLoaderWithTimeout('large', 3000);
   };
 
   const handleSetVisibleLoader = () => {
-    // setVisible method example
-    loader.setVisible(true, { size: 'large' });
-    
-    // Hide after 3 seconds
-    setTimeout(() => {
-      loader.setVisible(false);
-    }, 3000);
+    showLoaderWithSetVisible('large', 3000);
   };
 
-
   const handleShowCustomLoader = () => {
-    loader.show({
-      size: 'small'
-    });
-    
-    // Hide after 3 seconds
-    setTimeout(() => {
-      loader.hide();
-    }, 3000);
+    showLoaderWithTimeout('small', 3000);
   };
 
   const handleHideLoader = () => {
@@ -74,102 +72,69 @@ const LoaderExample: React.FC<LoaderExampleProps> = ({ onNavigateBack }) => {
   };
 
   const handleShowBothSimultaneously = () => {
-    // Show loader first
     loader.show({ size: 'large' });
-    
-    // Show alert after a short delay
-    setTimeout(() => {
-      alert.show('Alert shown while loader is active!');
-    }, 500);
-    
-    // Hide loader after 5 seconds
-    setTimeout(() => {
-      loader.hide();
-    }, 5000);
+    showAlertAfterDelay('Alert shown while loader is active!', 500);
+    setTimeout(() => loader.hide(), 5000);
   };
 
   const handleShowLoaderWithAlert = () => {
-    // Show loader
     loader.show({ size: 'small' });
-    
-    // Show alert after 1 second
-    setTimeout(() => {
-      alert.show({
-        title: 'Processing',
-        message: 'This alert appears while the loader is running. The loader should be on top.',
-        buttons: [
-          { text: 'OK', onPress: () => loader.hide() }
-        ]
-      });
+    showComplexAlertAfterDelay({
+      title: 'Processing',
+      message: 'This alert appears while the loader is running. The loader should be on top.',
+      buttons: [
+        { text: 'OK', onPress: () => loader.hide() }
+      ]
     }, 1000);
   };
 
+  const handleStartLoading = () => {
+    showLoaderAfterDelay(100, 'large', 3000);
+  };
+
   const handleShowAlertThenLoader = () => {
-    // Show alert first
     alert.show({
       title: 'Confirmation',
       message: 'Do you want to start the loading process?',
       buttons: [
-        { 
-          text: 'Cancel', 
-          style: 'cancel' 
-        },
-        { 
-          text: 'Start Loading', 
-          onPress: () => {
-            // Show loader after alert is dismissed
-            setTimeout(() => {
-              loader.show({ size: 'large' });
-              setTimeout(() => loader.hide(), 3000);
-            }, 100);
-          }
-        }
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Start Loading', onPress: handleStartLoading }
       ]
     });
   };
 
+  const handleStep2Alert = () => {
+    showComplexAlertAfterDelay({
+      title: 'Step 2',
+      message: 'Validating information...',
+      buttons: [
+        { text: 'Complete', onPress: () => loader.hide() }
+      ]
+    }, 500);
+  };
+
+  const handleStep1Continue = () => {
+    handleStep2Alert();
+  };
+
   const handleShowMultipleAlertsWithLoader = () => {
-    // Show loader
     loader.show({ size: 'large' });
-    
-    // Show first alert
-    setTimeout(() => {
-      alert.show({
-        title: 'Step 1',
-        message: 'Processing data...',
-        buttons: [
-          { text: 'Continue', onPress: () => {
-            // Show second alert
-            setTimeout(() => {
-              alert.show({
-                title: 'Step 2',
-                message: 'Validating information...',
-                buttons: [
-                  { text: 'Complete', onPress: () => loader.hide() }
-                ]
-              });
-            }, 500);
-          }}
-        ]
-      });
+    showComplexAlertAfterDelay({
+      title: 'Step 1',
+      message: 'Processing data...',
+      buttons: [
+        { text: 'Continue', onPress: handleStep1Continue }
+      ]
     }, 1000);
   };
 
   const handleShowLoaderOverAlert = () => {
-    // Show alert first
     alert.show({
       title: 'Background Alert',
       message: 'This alert will be covered by the loader when it appears.',
-      buttons: [
-        { text: 'OK' }
-      ]
+      buttons: [{ text: 'OK' }]
     });
-    
-    // Show loader after 2 seconds (while alert is still visible)
-    setTimeout(() => {
-      loader.show({ size: 'large' });
-      setTimeout(() => loader.hide(), 4000);
-    }, 2000);
+    showLoaderAfterDelay(2000, 'large', 4000);
   };
 
   return (
