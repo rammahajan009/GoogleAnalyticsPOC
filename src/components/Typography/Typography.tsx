@@ -141,13 +141,19 @@ const Typography: React.FC<TypographyProps> = ({
   }, [variantStyle, style]);
 
   // Memoize the onPress callback if it exists to prevent unnecessary re-renders
+  const memoizedOnPress = useCallback((event: any) => {
+    if (props.onPress) {
+      props.onPress(event);
+    }
+  }, [props.onPress]);
+
   const memoizedProps = useMemo(() => {
     const { onPress, ...otherProps } = props;
     if (onPress) {
-      return { ...otherProps, onPress: useCallback(onPress, [onPress]) };
+      return { ...otherProps, onPress: memoizedOnPress };
     }
     return otherProps;
-  }, [props]);
+  }, [props, memoizedOnPress]);
 
   return (
     <Text

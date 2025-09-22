@@ -92,6 +92,12 @@ import { Storage } from '../utils/storage';
 // Create a custom instance with a specific service prefix
 const secureStorage = Storage.getInstance('MyApp');
 
+// Initialize the instance (optional - operations will auto-initialize)
+await secureStorage.initialize();
+
+// Or get an already initialized instance
+const initializedStorage = await Storage.getInitializedInstance('MyApp');
+
 // Use the custom instance
 await secureStorage.setItem('apiKey', 'your-api-key-here');
 ```

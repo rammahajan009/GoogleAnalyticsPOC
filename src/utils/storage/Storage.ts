@@ -15,7 +15,6 @@ export class Storage {
 
   private constructor(servicePrefix: string = 'Storage') {
     this.servicePrefix = servicePrefix;
-    this.initializeKeychain();
   }
 
   /**
@@ -26,6 +25,24 @@ export class Storage {
       Storage.instance = new Storage(servicePrefix);
     }
     return Storage.instance;
+  }
+
+  /**
+   * Get singleton instance and ensure it's initialized
+   */
+  public static async getInitializedInstance(servicePrefix?: string): Promise<Storage> {
+    const instance = Storage.getInstance(servicePrefix);
+    await instance.initialize();
+    return instance;
+  }
+
+  /**
+   * Initialize the storage instance (call this after getting the instance)
+   */
+  public async initialize(): Promise<void> {
+    if (!this.isInitialized) {
+      await this.initializeKeychain();
+    }
   }
 
   /**

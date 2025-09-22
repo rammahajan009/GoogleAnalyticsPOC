@@ -117,7 +117,7 @@ class HttpClient {
         return config;
       },
       (error) => {
-        return Promise.reject(error);
+        return Promise.reject(error instanceof Error ? error : new Error(String(error)));
       }
     );
 
@@ -172,7 +172,7 @@ class HttpClient {
             // Reject all queued CSRF requests
             this.processCsrfQueue(refreshError, null);
             
-            return Promise.reject(refreshError);
+            return Promise.reject(refreshError instanceof Error ? refreshError : new Error(String(refreshError)));
           } finally {
             this.isRefreshingCsrf = false;
           }
@@ -221,13 +221,13 @@ class HttpClient {
             // Reject all queued requests
             this.processQueue(refreshError, null);
             
-            return Promise.reject(refreshError);
+            return Promise.reject(refreshError instanceof Error ? refreshError : new Error(String(refreshError)));
           } finally {
             this.isRefreshing = false;
           }
         }
 
-        return Promise.reject(error);
+        return Promise.reject(error instanceof Error ? error : new Error(String(error)));
       }
     );
   }
