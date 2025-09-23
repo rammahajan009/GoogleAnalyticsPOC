@@ -1,4 +1,5 @@
 import * as Keychain from 'react-native-keychain';
+import { NativeModules } from 'react-native';
 
 /**
  * Storage - A secure storage wrapper that mimics AsyncStorage API
@@ -41,7 +42,38 @@ export class Storage {
    */
   public async initialize(): Promise<void> {
     if (!this.isInitialized) {
+      // Check for fresh install and clear keychain data if needed
+      await this.handleFreshInstallDetection();
       await this.initializeKeychain();
+    }
+  }
+
+  /**
+   * Handle fresh install detection using UserDefaults
+   * If this is a fresh install, clear any existing keychain data
+   */
+  private async handleFreshInstallDetection(): Promise<void> {
+    try {
+      // Check if app was previously installed using UserDefaults
+      const hasRunBefore = await NativeModules.UserDefaults?.getBool?.('hasRunBefore');
+      
+      if (!hasRunBefore) {
+        // This is a fresh install, clear any existing keychain data
+        try {
+          await Keychain.resetGenericPassword();
+        } catch (clearError) {
+          // Silent fail - continue with initialization
+        }
+        
+        // Set flag to indicate app has run before
+        try {
+          await NativeModules.UserDefaults?.setBool?.('hasRunBefore', true);
+        } catch (flagError) {
+          // Silent fail - continue with initialization
+        }
+      }
+    } catch (error) {
+      // Continue with initialization even if detection fails
     }
   }
 
