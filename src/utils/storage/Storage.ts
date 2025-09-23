@@ -1,5 +1,5 @@
 import * as Keychain from 'react-native-keychain';
-import { NativeModules } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * Storage - A secure storage wrapper that mimics AsyncStorage API
@@ -49,13 +49,13 @@ export class Storage {
   }
 
   /**
-   * Handle fresh install detection using UserDefaults
+   * Handle fresh install detection using AsyncStorage
    * If this is a fresh install, clear any existing keychain data
    */
   private async handleFreshInstallDetection(): Promise<void> {
     try {
-      // Check if app was previously installed using UserDefaults
-      const hasRunBefore = await NativeModules.UserDefaults?.getBool?.('hasRunBefore');
+      // Check if app was previously installed using AsyncStorage
+      const hasRunBefore = await AsyncStorage.getItem(`${this.servicePrefix}_hasRunBefore`);
       
       if (!hasRunBefore) {
         // This is a fresh install, clear any existing keychain data
@@ -67,7 +67,7 @@ export class Storage {
         
         // Set flag to indicate app has run before
         try {
-          await NativeModules.UserDefaults?.setBool?.('hasRunBefore', true);
+          await AsyncStorage.setItem(`${this.servicePrefix}_hasRunBefore`, 'true');
         } catch (flagError) {
           // Silent fail - continue with initialization
         }
