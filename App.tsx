@@ -13,6 +13,7 @@ import { AlertProvider } from './src/utils/alert';
 import AnalyticsScreen from './src/screens/AnalyticsScreen';
 import StickyScreen from './src/screens/StickyScreen';
 import LoaderExample from './src/examples/LoaderExample';
+import TypographyExample from './src/examples/TypographyExample';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -39,19 +40,7 @@ function App() {
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       
       <AlertProvider>
-        {currentScreen === 'analytics' ? (
-          <AnalyticsScreen 
-            onNavigateToSticky={handleNavigateToSticky} 
-            onNavigateToLoader={handleNavigateToLoader}
-          />
-        ) : currentScreen === 'sticky' ? (
-          <StickyScreen onNavigateToAnalytics={handleNavigateToAnalytics} />
-        ) : (
-          <LoaderExample onNavigateBack={handleNavigateBack} />
-        )}
-        
-        {/* LoaderProvider for global loader state */}
-        <LoaderProvider />
+        <TypographyExample />
       </AlertProvider>
     </SafeAreaProvider>
   );

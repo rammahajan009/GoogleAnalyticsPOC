@@ -30,12 +30,62 @@ export interface TypographyProps extends TextProps {
   semibold?: boolean;
   extrabold?: boolean;
   black?: boolean;
+  // Style props
+  italic?: boolean;
   size?: number;
   lineHeight?: number;
   letterSpacing?: number;
   style?: TextStyle;
   children: React.ReactNode;
 }
+
+// Font mapping for different Roboto variants
+const getRobotoFontFamily = (weight?: string, style?: string) => {
+  const baseFont = 'Roboto';
+  
+  if (style === 'italic') {
+    switch (weight) {
+      case 'bold':
+      case '700':
+        return 'Roboto-BoldItalic';
+      case 'black':
+      case '900':
+        return 'Roboto-BlackItalic';
+      case 'normal':
+      case '400':
+      default:
+        return 'Roboto-Italic';
+    }
+  }
+  
+  switch (weight) {
+    case 'bold':
+    case '700':
+      return 'Roboto-Bold';
+    case 'black':
+    case '900':
+      return 'Roboto-Black';
+    case 'thin':
+    case '100':
+      return 'Roboto-Thin';
+    case 'light':
+    case '300':
+      return 'Roboto-Light';
+    case 'medium':
+    case '500':
+      return 'Roboto-Medium';
+    case 'semibold':
+    case '600':
+      return 'Roboto-Medium'; // Using Medium as closest to semibold
+    case 'extrabold':
+    case '800':
+      return 'Roboto-Bold'; // Using Bold as closest to extrabold
+    case 'normal':
+    case '400':
+    default:
+      return baseFont;
+  }
+};
 
 // Memoized platform font function - only created once
 const getPlatformFont = Platform.select({
@@ -64,6 +114,7 @@ const Typography: React.FC<TypographyProps> = ({
   color,
   left, center, right, justify,
   normal, bold, thin, light, medium, semibold, extrabold, black,
+  italic,
   size,
   lineHeight,
   letterSpacing,
@@ -109,6 +160,12 @@ const Typography: React.FC<TypographyProps> = ({
     return undefined;
   }, [normal, bold, thin, light, medium, semibold, extrabold, black]);
 
+  // Determine font style from boolean props
+  const fontStyle = useMemo((): 'normal' | 'italic' | undefined => {
+    if (italic) return 'italic';
+    return 'normal';
+  }, [italic]);
+
   // Memoize the variant style calculation to avoid recalculation on every render
   const variantStyle = useMemo(() => {
     const baseStyle = baseStyles[variant];
@@ -122,17 +179,21 @@ const Typography: React.FC<TypographyProps> = ({
     // Calculate responsive letter spacing if not provided
     const responsiveLetterSpacing = letterSpacing || ResponsiveStyleSheet.letterSpacing(0);
     
+    // Get the appropriate Roboto font family based on weight and style
+    const robotoFontFamily = getRobotoFontFamily(fontWeight, fontStyle);
+    
     return {
       ...baseStyle,
-      ...getPlatformFont,
+      fontFamily: robotoFontFamily,
       fontSize: responsiveFontSize,
       lineHeight: responsiveLineHeight,
       letterSpacing: responsiveLetterSpacing,
       color: color || '#3f4048', // Default color matching CSS design
       ...(textAlign && { textAlign }),
       ...(fontWeight && { fontWeight }),
+      ...(fontStyle && { fontStyle }),
     };
-  }, [variant, color, textAlign, fontWeight, size, lineHeight, letterSpacing]);
+  }, [variant, color, textAlign, fontWeight, fontStyle, size, lineHeight, letterSpacing]);
 
   // Memoize the final style object to prevent unnecessary re-renders
   const finalStyle = useMemo(() => {
