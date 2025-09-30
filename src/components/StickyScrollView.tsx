@@ -168,13 +168,13 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
         console.warn(`Section '${sectionName}' not found. Available sections:`, Object.keys(sectionPositions));
       }
     },
-    registerSection: (sectionName: string, yPosition: number, height: number = 0) => {
+    registerSection: (sectionName: string, yPosition: number, _height: number = 0) => {
       setSectionPositions(prev => {
         const newSections = { ...prev, [sectionName]: { y: yPosition, height: 0, isFooter: false } };
         return calculateSectionHeights(newSections);
       });
     },
-    registerFooterSection: (sectionName: string, yPosition: number, height: number = 0) => {
+    registerFooterSection: (sectionName: string, yPosition: number, _height: number = 0) => {
       setSectionPositions(prev => {
         const newSections = { ...prev, [sectionName]: { y: yPosition, height: 0, isFooter: true } };
         return calculateSectionHeights(newSections);
@@ -235,7 +235,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
   const measureButtonPosition = useCallback(() => {
     if (!buttonRef.current) return;
     
-    buttonRef.current.measure((x, y, width, height, pageX, pageY) => {
+    buttonRef.current.measure((_x, _y, _width, height) => {
       // Cache the button height when first measured
       if (height > 0 && cachedButtonHeight === 0) {
         setCachedButtonHeight(height);
@@ -345,7 +345,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
 
         {/* Tabs - Index 1 (Will be sticky) */}
         <View
-          style={{ width: '100%', alignSelf: 'stretch' }}
+          style={styles.tabsContainer}
           onLayout={handleTabsLayout}
         >
           {tabs}
@@ -360,7 +360,7 @@ const StickyScrollView = forwardRef<StickyScrollViewRef, StickyScrollViewProps>(
           onLayout={measureButtonPosition}
           style={[
             styles.buttonContainer,
-            isButtonStuck ? { display: 'none' } : { display: 'flex' },
+            isButtonStuck ? styles.buttonHidden : styles.buttonVisible,
           ]}
         >
           {memoizedButtonContent}
@@ -466,6 +466,16 @@ const styles = StyleSheet.create({
   buttonContentWrapper: {
     width: '100%',
     alignSelf: 'stretch',
+  },
+  tabsContainer: {
+    width: '100%',
+    alignSelf: 'stretch',
+  },
+  buttonHidden: {
+    display: 'none',
+  },
+  buttonVisible: {
+    display: 'flex',
   },
 });
 

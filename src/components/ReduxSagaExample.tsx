@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -52,9 +52,9 @@ const ReduxSagaExampleContent: React.FC = () => {
   };
 
   // Handle fetch users
-  const handleFetchUsers = () => {
+  const handleFetchUsers = useCallback(() => {
     dispatch(fetchUsersRequest());
-  };
+  }, [dispatch]);
 
   // Handle fetch user profile
   const handleFetchProfile = () => {
@@ -75,7 +75,7 @@ const ReduxSagaExampleContent: React.FC = () => {
     if (isAuthenticated && users.length === 0) {
       handleFetchUsers();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, users.length, handleFetchUsers]);
 
   return (
     <ScrollView style={styles.container}>
@@ -226,13 +226,13 @@ const ReduxSagaExampleContent: React.FC = () => {
               <Typography h3 style={styles.dataTitle}>
                 Users ({users.length}):
               </Typography>
-              {users.map((user, index) => (
-                <View key={user.id} style={styles.userItem}>
+              {users.map((userData) => (
+                <View key={userData.id} style={styles.userItem}>
                   <Typography body1 style={styles.userName}>
-                    {user.name}
+                    {userData.name}
                   </Typography>
                   <Typography caption style={styles.userEmail}>
-                    {user.email}
+                    {userData.email}
                   </Typography>
                 </View>
               ))}

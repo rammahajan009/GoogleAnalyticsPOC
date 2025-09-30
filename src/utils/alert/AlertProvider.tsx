@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { alert, AlertInstance } from './AlertService';
 import Alert from './Alert';
 
@@ -17,7 +17,7 @@ const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
       setCurrentAlert(alertInstance);
     };
 
-    const handleHide = (alertInstance: AlertInstance) => {
+    const handleHide = () => {
       // Alert is hidden, no need to track in state
     };
 
@@ -44,7 +44,7 @@ const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       {children}
       
       {/* Render only the current alert to prevent multiple modals */}
@@ -63,5 +63,11 @@ const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 
 export default AlertProvider;

@@ -849,15 +849,15 @@ export const ls = (spacing: number) => ResponsiveStyleSheet.letterSpacing(spacin
 export const spacing = (
   type: 'margin' | 'padding' | 'gap',
   direction: 'top' | 'bottom' | 'left' | 'right' | 'horizontal' | 'vertical' | 'all' | 'sides',
-  spacing: keyof typeof ResponsiveStyleSheet.SPACING_SCALE,
+  size: keyof typeof ResponsiveStyleSheet.SPACING_SCALE,
   sides?: [keyof typeof ResponsiveStyleSheet.SPACING_SCALE, keyof typeof ResponsiveStyleSheet.SPACING_SCALE, keyof typeof ResponsiveStyleSheet.SPACING_SCALE, keyof typeof ResponsiveStyleSheet.SPACING_SCALE]
-) => ResponsiveStyleSheet.getSpacing(type, direction, spacing, sides);
+) => ResponsiveStyleSheet.getSpacing(type, direction, size, sides);
 
 // Layout spacing helper
 export const layoutSpacing = (
   layoutType: 'list' | 'card' | 'button' | 'form' | 'navigation' | 'grid' | 'stack' | 'section',
-  spacing: keyof typeof ResponsiveStyleSheet.SPACING_SCALE
-) => ResponsiveStyleSheet.getLayoutSpacing(layoutType, spacing);
+  size: keyof typeof ResponsiveStyleSheet.SPACING_SCALE
+) => ResponsiveStyleSheet.getLayoutSpacing(layoutType, size);
 
 // Spacer utilities for adding space between components
 export const spacer = (width: number = 0, height: number = 0) => ({
@@ -870,11 +870,11 @@ export const hspacer = (width: number) => ({
 export const vspacer = (height: number) => ({
   height: ResponsiveStyleSheet.height(height),
 });
-export const rvspacer = (spacing: keyof typeof ResponsiveStyleSheet.SPACING_SCALE) => ({
-  height: ResponsiveStyleSheet.responsiveSpacing(spacing),
+export const rvspacer = (size: keyof typeof ResponsiveStyleSheet.SPACING_SCALE) => ({
+  height: ResponsiveStyleSheet.responsiveSpacing(size),
 });
-export const rhspacer = (spacing: keyof typeof ResponsiveStyleSheet.SPACING_SCALE) => ({
-  width: ResponsiveStyleSheet.responsiveSpacing(spacing),
+export const rhspacer = (size: keyof typeof ResponsiveStyleSheet.SPACING_SCALE) => ({
+  width: ResponsiveStyleSheet.responsiveSpacing(size),
 });
 
 // Gap utilities for flex containers

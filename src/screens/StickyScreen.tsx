@@ -151,7 +151,7 @@ const StickyScreen: React.FC<StickyScreenProps> = ({ onNavigateToAnalytics }) =>
                 <Text style={[
                   styles.tabText, 
                   { color: colors.textSecondary },
-                  selectedTab === 'overview' && { color: colors.onPrimary, fontWeight: '700' }
+                  selectedTab === 'overview' && [styles.tabTextActive, { color: colors.onPrimary }]
                 ]}>
                   Overview
                 </Text>
@@ -171,7 +171,7 @@ const StickyScreen: React.FC<StickyScreenProps> = ({ onNavigateToAnalytics }) =>
                 <Text style={[
                   styles.tabText, 
                   { color: colors.textSecondary },
-                  selectedTab === 'features' && { color: colors.onPrimary, fontWeight: '700' }
+                  selectedTab === 'features' && [styles.tabTextActive, { color: colors.onPrimary }]
                 ]}>
                   Features
                 </Text>
@@ -191,7 +191,7 @@ const StickyScreen: React.FC<StickyScreenProps> = ({ onNavigateToAnalytics }) =>
                 <Text style={[
                   styles.tabText, 
                   { color: colors.textSecondary },
-                  selectedTab === 'details' && { color: colors.onPrimary, fontWeight: '700' }
+                  selectedTab === 'details' && [styles.tabTextActive, { color: colors.onPrimary }]
                 ]}>
                   Details
                 </Text>
@@ -199,7 +199,7 @@ const StickyScreen: React.FC<StickyScreenProps> = ({ onNavigateToAnalytics }) =>
             </View>
           }
           buttonContent={
-            <View style={[styles.stickyButton, { backgroundColor: colors.success, alignSelf: 'stretch' }]}>
+            <View style={[styles.stickyButton, styles.stickyButtonStretch, { backgroundColor: colors.success }]}>
               <Text style={[styles.buttonText, { color: colors.onPrimary }]}>🎯 Sticky Button</Text>
               <Text style={[styles.buttonSubtext, { color: colors.onPrimary }]}>Tap me!</Text>
             </View>
@@ -324,6 +324,12 @@ const styles = StyleSheet.create({
     fontSize: f(14),
     fontWeight: '600',
     textAlign: 'center',
+  },
+  tabTextActive: {
+    fontWeight: '700',
+  },
+  stickyButtonStretch: {
+    alignSelf: 'stretch',
   },
   contentSection: {
     paddingHorizontal: s(5),

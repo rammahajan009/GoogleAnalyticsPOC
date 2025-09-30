@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback } from 'react';
-import { Text, TextProps, StyleSheet, TextStyle, Platform } from 'react-native';
+import { Text, TextProps, StyleSheet, TextStyle } from 'react-native';
 import { ResponsiveStyleSheet } from '../../utils/ResponsiveStyle/ResponsiveStyleSheet';
 
 // Updated interface with boolean props for variants, alignment, and weight
@@ -87,12 +87,6 @@ const getRobotoFontFamily = (weight?: string, style?: string) => {
   }
 };
 
-// Memoized platform font function - only created once
-const getPlatformFont = Platform.select({
-  ios: { fontFamily: 'Roboto' },
-  android: { fontFamily: 'Roboto' },
-});
-
 // Pre-calculate base styles to avoid runtime calculations
 const baseStyles = StyleSheet.create({
   h1: { fontSize: 32, lineHeight: 40, fontWeight: '700' },
@@ -120,6 +114,7 @@ const Typography: React.FC<TypographyProps> = ({
   letterSpacing,
   style,
   children,
+  onPress,
   ...props
 }) => {
   // Determine variant from boolean props
@@ -203,18 +198,17 @@ const Typography: React.FC<TypographyProps> = ({
 
   // Memoize the onPress callback if it exists to prevent unnecessary re-renders
   const memoizedOnPress = useCallback((event: any) => {
-    if (props.onPress) {
-      props.onPress(event);
+    if (onPress) {
+      onPress(event);
     }
-  }, [props.onPress]);
+  }, [onPress]);
 
   const memoizedProps = useMemo(() => {
-    const { onPress, ...otherProps } = props;
     if (onPress) {
-      return { ...otherProps, onPress: memoizedOnPress };
+      return { ...props, onPress: memoizedOnPress };
     }
-    return otherProps;
-  }, [props, memoizedOnPress]);
+    return props;
+  }, [props, onPress, memoizedOnPress]);
 
   return (
     <Text

@@ -128,7 +128,7 @@ const Button: React.FC<ButtonProps> = ({
   
   // Sizes
   small,
-  medium,
+  medium: _medium,
   large,
   
   // States
@@ -137,7 +137,7 @@ const Button: React.FC<ButtonProps> = ({
   fullWidth,
   
   // Style overrides
-  color,
+  color: _color,
   backgroundColor,
   borderColor,
   textColor,
@@ -227,7 +227,7 @@ const Button: React.FC<ButtonProps> = ({
       customStyles,
       style,
     ];
-  }, [variant, size, backgroundColor, borderColor, fullWidth, style, accessibilityState]);
+  }, [variant, size, backgroundColor, borderColor, borderRadius, fullWidth, style]);
 
   // Memoize the text style calculation
   const textStyleObj = useMemo(() => {

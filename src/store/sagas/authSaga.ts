@@ -14,17 +14,6 @@ interface LoginCredentials {
   password: string;
 }
 
-interface LoginResponse {
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    avatar?: string;
-  };
-  token: string;
-  refreshToken: string;
-}
-
 // Helper functions
 function createUserFromResponse(response: any, credentials: LoginCredentials) {
   return {

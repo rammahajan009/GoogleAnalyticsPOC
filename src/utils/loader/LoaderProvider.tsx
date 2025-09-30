@@ -25,7 +25,7 @@ const LoaderProvider: React.FC = React.memo(() => {
       size: currentLoader.options.size,
       id: currentLoader.id,
     };
-  }, [currentLoader?.visible, currentLoader?.options.size, currentLoader?.id]);
+  }, [currentLoader]);
 
   if (!currentLoader || !loaderProps) {
     return null;

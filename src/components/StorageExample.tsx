@@ -98,8 +98,8 @@ const StorageExample: React.FC = () => {
     try {
       const items = await storage.multiGet(keys);
       const results = items
-        .filter(([_, value]) => value !== null)
-        .map(([key, value]) => `${key}: ${value}`)
+        .filter(([_, itemValue]) => itemValue !== null)
+        .map(([itemKey, itemValue]) => `${itemKey}: ${itemValue}`)
         .join('\n');
       
       if (results) {
