@@ -6,10 +6,10 @@
  */
 
 import React from 'react';
-import { StatusBar, useColorScheme } from 'react-native';
+import { ScrollView, StatusBar, useColorScheme, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AlertProvider } from './src/utils/alert';
-import TypographyExample from './src/examples/TypographyExample';
+import HorizontalPagingScreen from './src/screens/HorizontalPagingScreen';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -17,12 +17,20 @@ function App() {
   return (
     <SafeAreaProvider>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      
+
       <AlertProvider>
-        <TypographyExample />
+        <ScrollView style={styles.container}>
+          <HorizontalPagingScreen />
+        </ScrollView>
       </AlertProvider>
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 
 export default App;

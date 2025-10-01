@@ -16,3 +16,7 @@ export { default as StorageExample } from './StorageExample';
 // Loader Component
 export { Loader, LoaderProvider, loader } from '../utils/loader';
 export type { LoaderProps, LoaderOptions, LoaderInstance } from '../utils/loader';
+
+// HorizontalPagingFlatList Component
+export { HorizontalPagingFlatList } from './HorizontalPagingFlatList';
+export type { HorizontalPagingFlatListProps } from './HorizontalPagingFlatList';
